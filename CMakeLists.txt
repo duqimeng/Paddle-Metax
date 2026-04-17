@@ -810,7 +810,7 @@ file(
   ${CMAKE_CURRENT_SOURCE_DIR}/kernels/custom_kernel/layer_norm_kernel_register.cu
   ${CMAKE_CURRENT_SOURCE_DIR}/kernels/custom_kernel/layer_norm_grad_kernel_register.cu
   ${CMAKE_CURRENT_SOURCE_DIR}/kernels/custom_kernel/flash_attn_grad_kernel.cu
-  # ${CMAKE_CURRENT_SOURCE_DIR}/kernels/custom_kernel/flash_attn_kernel.cu
+  ${CMAKE_CURRENT_SOURCE_DIR}/kernels/custom_kernel/flash_attn_kernel.cu
   ${CMAKE_CURRENT_SOURCE_DIR}/kernels/custom_kernel/flashattn.cc
   ${CMAKE_CURRENT_SOURCE_DIR}/kernels/gpudnn/soft.cu)
 
