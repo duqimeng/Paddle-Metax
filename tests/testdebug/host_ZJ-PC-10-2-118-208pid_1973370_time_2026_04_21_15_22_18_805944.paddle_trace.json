@@ -1,0 +1,186 @@
+
+  {
+    "displayTimeUnit": "ms",
+    "schemaVersion": "1.0.2",
+    "span_index": "0",
+    "traceEvents": [
+  
+  {
+    "name": "ProfileStep#3[42.579 us]", "pid": 1973370, "tid": "1973370(Python)",
+    "ts": 1776756138805753, "dur": 42.579,
+    "ph": "X", "cat": "ProfileStep",
+    "cname": "thread_state_runnable",
+    "args": {
+      "start_time": "0.000 us",
+      "end_time": "42.579 us"
+    }
+  },
+  
+  {
+    "name": "__div__ pybind_patch_func[18.662 us]", "pid": 1973370, "tid": "1973370(C++)",
+    "ts": 1776756138805754, "dur": 18.662,
+    "ph": "X", "cat": "UserDefined",
+    "cname": "thread_state_runnable",
+    "args": {
+      "start_time": "1.724 us",
+      "end_time": "20.386 us"
+    }
+  },
+  
+  {
+    "name": "full_like pybind_imperative_func[5.578 us]", "pid": 1973370, "tid": "1973370(C++)",
+    "ts": 1776756138805784, "dur": 5.578,
+    "ph": "X", "cat": "UserDefined",
+    "cname": "thread_state_runnable",
+    "args": {
+      "start_time": "31.074 us",
+      "end_time": "36.652 us"
+    }
+  },
+  
+  {
+    "name": "div_scale dygraph[12.520 us]", "pid": 1973370, "tid": "1973370(C++)",
+    "ts": 1776756138805760, "dur": 12.520,
+    "ph": "X", "cat": "Operator",
+    "cname": "thread_state_runnable",
+    "args": {
+      "start_time": "6.892 us",
+      "end_time": "19.412 us",
+      "input_shapes": {},
+      "input_dtypes": {},
+      "callstack": ""
+    }
+  },
+  
+  {
+    "name": "full_like dygraph[3.861 us]", "pid": 1973370, "tid": "1973370(C++)",
+    "ts": 1776756138805785, "dur": 3.861,
+    "ph": "X", "cat": "Operator",
+    "cname": "thread_state_runnable",
+    "args": {
+      "start_time": "32.468 us",
+      "end_time": "36.329 us",
+      "input_shapes": {},
+      "input_dtypes": {},
+      "callstack": ""
+    }
+  },
+  
+  {
+    "name": "div_scale node_creation[0.388 us]", "pid": 1973370, "tid": "1973370(C++)",
+    "ts": 1776756138805761, "dur": 0.388,
+    "ph": "X", "cat": "OperatorInner",
+    "cname": "thread_state_runnable",
+    "args": {
+      "start_time": "7.933 us",
+      "end_time": "8.321 us"
+    }
+  },
+  
+  {
+    "name": "div_scale infer_meta[0.983 us]", "pid": 1973370, "tid": "1973370(C++)",
+    "ts": 1776756138805765, "dur": 0.983,
+    "ph": "X", "cat": "OperatorInner",
+    "cname": "thread_state_runnable",
+    "args": {
+      "start_time": "11.883 us",
+      "end_time": "12.866 us"
+    }
+  },
+  
+  {
+    "name": "div_scale kernel launch[4.113 us]", "pid": 1973370, "tid": "1973370(C++)",
+    "ts": 1776756138805766, "dur": 4.113,
+    "ph": "X", "cat": "DygraphKernelLaunch",
+    "cname": "thread_state_runnable",
+    "args": {
+      "start_time": "12.963 us",
+      "end_time": "17.076 us"
+    }
+  },
+  
+  {
+    "name": "full_like infer_meta[0.334 us]", "pid": 1973370, "tid": "1973370(C++)",
+    "ts": 1776756138805786, "dur": 0.334,
+    "ph": "X", "cat": "OperatorInner",
+    "cname": "thread_state_runnable",
+    "args": {
+      "start_time": "33.791 us",
+      "end_time": "34.125 us"
+    }
+  },
+  
+  {
+    "name": "full_like kernel launch[1.807 us]", "pid": 1973370, "tid": "1973370(C++)",
+    "ts": 1776756138805787, "dur": 1.807,
+    "ph": "X", "cat": "DygraphKernelLaunch",
+    "cname": "thread_state_runnable",
+    "args": {
+      "start_time": "34.249 us",
+      "end_time": "36.056 us"
+    }
+  },
+  
+  {
+    "name": "process_name", "pid": 1973370, "tid": "1973370(Python)",
+    "ph": "M",
+    "args": {
+      "name": "Process 1973370 (CPU)"
+    }
+  },
+  {
+    "name": "process_name", "pid": 1973370, "tid": "1973370(C++)",
+    "ph": "M",
+    "args": {
+      "name": "Process 1973370 (CPU)"
+    }
+  },
+   {
+    "name": "thread_name", "pid": 1973370, "tid": "1973370(Python)",
+    "ph": "M",
+    "args": {
+      "name": "thread 1973370:MainThread(Python)"
+    }
+  },
+  {
+    "name": "thread_name", "pid": 1973370, "tid": "1973370(C++)",
+    "ph": "M",
+    "args": {
+      "name": "thread 1973370:MainThread(C++)"
+    }
+  },
+  {
+    "name": "process_sort_index", "pid": 1973370, "tid": 1973370,
+    "ph": "M",
+    "args": {
+      "sort_index": 1973370
+    }
+  },
+  {
+    "name": "thread_sort_index", "pid": 1973370, "tid": "1973370(Python)",
+    "ph": "M",
+    "args": {
+      "sort_index": 3946740
+    }
+  },
+  {
+    "name": "thread_sort_index", "pid": 1973370, "tid": "1973370(C++)",
+    "ph": "M",
+    "args": {
+      "sort_index": 3946741
+    }
+  },
+  
+  {}
+  ],
+  
+  "ExtraInfo": {
+     "1973370": "MainThread",
+   
+     "Process Cpu Utilization": "0.000000",
+   
+     "System Cpu Utilization": "0.000000"
+   
+  }
+  }
+  

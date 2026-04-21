@@ -35,7 +35,7 @@
 #include <mutex>
 #include <unordered_map>
 
-#include "../cinn/cinn_interface.h"
+#include "cinn/cinn_interface.h"
 #include "glog/logging.h"
 #include "paddle/fluid/platform/profiler/cuda_tracer.h"
 #include "paddle/fluid/platform/profiler/cupti_data_process.h"
@@ -57,6 +57,7 @@
 #include "passes/pattern_passes.h"
 #include "runtime/process_cupti_data.cc"  //NOLINT
 #include "unsupported/Eigen/CXX11/Tensor"
+
 #define MEMORY_FRACTION 0.5f
 
 static int global_current_device = 0;

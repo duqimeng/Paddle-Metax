@@ -93,7 +93,7 @@ endif()
 #     CACHE PATH "Third party libraries directory.")
 
 # include(version)
-# include(generic)
+include(generic)
 # include(cblas)
 include(flashattn)
 include(cutlass)
