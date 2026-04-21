@@ -21,9 +21,6 @@ pip uninstall paddlepaddle-metax -y || echo "No existing paddlepaddle-metax inst
 # bash clean_paddle.sh || { echo "Error: Failed to clean paddle!"; exit 1; }
 
 
-# rm -rf /root/m01097/Paddle-metax_test/Paddle/third_party/eigen3
-# cp -r /root/m01097/Paddle-metax_test/eigen3/ /root/m01097/Paddle-metax_test/Paddle/third_party/eigen3
-# git -C /root/m01097/Paddle-metax_test/Paddle config submodule.third_party/eigen3.update none
 
 PYTHON_VERSION=${PYTHON_VERSION:-$(python3 -V 2>&1|awk '{print $2}')}
 
@@ -40,16 +37,6 @@ METAX_SOURCE_DIR="${SCRIPT_DIR}"
 METAX_BUILD_DIR="${PADDLE_BUILD_DIR}/custom_device_build"
 
 
-# WITH_CINN=${WITH_CINN:-OFF}
-# export CMAKE_CUDA_ARCHITECTURES=${COREX_ARCH}
-
-# SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-# PADDLE_SOURCE_DIR="${SCRIPT_DIR}/Paddle"
-# PADDLE_BUILD_DIR="${PADDLE_SOURCE_DIR}/build"
-# ILUVATAR_SOURCE_DIR="${SCRIPT_DIR}"
-# ILUVATAR_BUILD_DIR="${PADDLE_BUILD_DIR}/custom_device_build"
-# PATCH_FILE="${SCRIPT_DIR}/patches/paddle-corex.patch"
-# STATE_FILE="${SCRIPT_DIR}/.build_state"
 
 
 
@@ -119,8 +106,6 @@ PADDLE_CMAKE_ARGS+=("-DCUSTOM_DEVICE_CMAKE_ARGS=${CUSTOM_DEVICE_CMAKE_ARGS_STR}"
 
 cd Paddle/build || { echo "Error: Failed to enter Paddle/build directory!"; exit 1; }
 
-# cmake_maca "${PADDLE_CMAKE_ARGS[@]}" "${PADDLE_SOURCE_DIR}" 2>&1 | tee cmake_config_319.log \
-#   || { echo "Error: CMake configuration failed! Check cmake_config.log for details."; exit 1; }
 
 # 在数组展开后追加 -DCMAKE_BUILD_TYPE=Debug
 cmake_maca "${PADDLE_CMAKE_ARGS[@]}" -DCMAKE_BUILD_TYPE=Debug "${PADDLE_SOURCE_DIR}" 2>&1 | tee cmake_config_416.log \
@@ -140,15 +125,3 @@ echo "-------------------------------------------------------------------"
 pip install python/dist/paddlepaddle_metax-3.4.0.dev20260415-cp310-cp310-linux_x86_64.whl --force-reinstall
 
 
-# pip install python/dist/paddlepaddle_metax-3.4.0.dev20260312-cp310-cp310-linux_x86_64.whl --force-reinstall
-# pip install Paddle/build/python/dist/paddlepaddle_metax-3.4.0.dev20260312-cp310-cp310-linux_x86_64.whl --force-reinstall
-
-# # Revert patch
-# if git -C "$PADDLE_SOURCE_DIR" apply --reverse --check "$PATCH_FILE" > /dev/null 2>&1; then
-#   git -C "$PADDLE_SOURCE_DIR" apply --reverse "$PATCH_FILE" || { echo "Error: Failed to revert patch!"; exit 1; }
-#   echo "Patch successfully reverted!"
-# fi
-
-# pushd ${PADDLE_SOURCE_DIR}/third_party/eigen3
-# git reset --hard || { echo "Error: Failed to reset eigen repository!"; exit 1; }
-# popd
