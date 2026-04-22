@@ -409,3 +409,9 @@ The following tests FAILED:
         594 - python_test_newprofiler (Failed)
         717 - python_test_trainer_desc (Failed)
         745 - python_test_warprnnt_op (Failed)
+
+
+The following tests FAILED:
+        339 - python_test_warpctc_op (Failed)
+        594 - python_test_newprofiler (Failed)
+        745 - python_test_warprnnt_op (Failed)

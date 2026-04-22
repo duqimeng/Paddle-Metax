@@ -1,7 +1,3 @@
-test_rnn_cell_api
-test_gru_rnn_op
-test_simple_rnn_op
 test_warpctc_op
 test_newprofiler
-test_trainer_desc
 test_warprnnt_op

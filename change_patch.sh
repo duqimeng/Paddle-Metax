@@ -20,10 +20,13 @@ cd patches
 unzip Eigen_3.4.0_paddle.zip
 mv Eigen_3.4.0_paddle eigen3
 cd ..
+rm -r Paddle/third_party/eigen3
 cp -r patches/eigen3/ Paddle/third_party/eigen3
 rm -r patches/eigen3
 # cp patch/tmp/mixed_vector* ../../Paddle/paddle/phi/core
 cd Paddle/
 git apply --verbose ../patches/paddle.patch
+
+git apply --verbose ../patches/patch_nullptr.patch
 cd -
 # cp -r patch/intrinsics.cuh ../../Paddle/third_party/warpctc/include/contrib/moderngpu/include/device/

@@ -35,7 +35,7 @@
 #include <mutex>
 #include <unordered_map>
 
-#include "cinn/cinn_interface.h"
+#include "../cinn/cinn_interface.h"
 #include "glog/logging.h"
 #include "paddle/fluid/platform/profiler/cuda_tracer.h"
 #include "paddle/fluid/platform/profiler/cupti_data_process.h"

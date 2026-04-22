@@ -24,7 +24,6 @@
 #include <cstdio>
 #include <sstream>
 #include <thread>
-#include "paddle/fluid/platform/profiler/custom_device/custom_tracer.cc" //NOLINT
 #include "paddle/phi/backends/dynload/cupti.h"
 
 pid_t gettid() { return syscall(SYS_gettid); }

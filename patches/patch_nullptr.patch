@@ -1,0 +1,115 @@
+diff --git a/paddle/fluid/framework/new_executor/instruction/legacy_kernel_instruction.cc b/paddle/fluid/framework/new_executor/instruction/legacy_kernel_instruction.cc
+index 7f4724bac0..736193c2f5 100644
+--- a/paddle/fluid/framework/new_executor/instruction/legacy_kernel_instruction.cc
++++ b/paddle/fluid/framework/new_executor/instruction/legacy_kernel_instruction.cc
+@@ -183,8 +183,12 @@ LegacyKernelInstruction::LegacyKernelInstruction(
+ }
+ 
+ LegacyKernelInstruction::~LegacyKernelInstruction() {
+-  delete kernel_context_;
+-  delete phi_kernel_;
++  if (kernel_context_ != nullptr) {
++    delete kernel_context_;
++    kernel_context_ = nullptr;
++  }
++  // phi_kernel_ is managed by KernelFactory, not owned by this class
++  phi_kernel_ = nullptr;
+ }
+ 
+ void LegacyKernelInstruction::Run() {
+diff --git a/paddle/fluid/framework/new_executor/instruction/onednn/onednn_instruction.cc b/paddle/fluid/framework/new_executor/instruction/onednn/onednn_instruction.cc
+index 175efaab65..1b0cbd8694 100644
+--- a/paddle/fluid/framework/new_executor/instruction/onednn/onednn_instruction.cc
++++ b/paddle/fluid/framework/new_executor/instruction/onednn/onednn_instruction.cc
+@@ -404,7 +404,8 @@ OneDNNPhiKernelInstruction::OneDNNPhiKernelInstruction(
+ }
+ 
+ OneDNNPhiKernelInstruction::~OneDNNPhiKernelInstruction() {
+-  delete phi_kernel_;
++  // phi_kernel_ is managed by KernelFactory, not owned by this class
++  phi_kernel_ = nullptr;
+ }
+ 
+ void OneDNNPhiKernelInstruction::Run() {
+diff --git a/paddle/fluid/framework/new_executor/instruction/onednn/onednn_legacy_instruction.cc b/paddle/fluid/framework/new_executor/instruction/onednn/onednn_legacy_instruction.cc
+index ee2b30a381..9f27de6e6d 100644
+--- a/paddle/fluid/framework/new_executor/instruction/onednn/onednn_legacy_instruction.cc
++++ b/paddle/fluid/framework/new_executor/instruction/onednn/onednn_legacy_instruction.cc
+@@ -255,8 +255,12 @@ OneDNNLegacyKernelInstruction::OneDNNLegacyKernelInstruction(
+ }
+ 
+ OneDNNLegacyKernelInstruction::~OneDNNLegacyKernelInstruction() {
+-  delete kernel_context_;
+-  delete phi_kernel_;
++  if (kernel_context_ != nullptr) {
++    delete kernel_context_;
++    kernel_context_ = nullptr;
++  }
++  // phi_kernel_ is managed by KernelFactory, not owned by this class
++  phi_kernel_ = nullptr;
+ }
+ 
+ void OneDNNLegacyKernelInstruction::Run() {
+diff --git a/paddle/fluid/framework/new_executor/instruction/phi_kernel_instruction.cc b/paddle/fluid/framework/new_executor/instruction/phi_kernel_instruction.cc
+index 0d0c6bf5b9..eb124f8a6b 100644
+--- a/paddle/fluid/framework/new_executor/instruction/phi_kernel_instruction.cc
++++ b/paddle/fluid/framework/new_executor/instruction/phi_kernel_instruction.cc
+@@ -181,7 +181,13 @@ PhiKernelInstruction::PhiKernelInstruction(
+   VLOG(6) << "finish process no need buffer";
+ }
+ 
+-PhiKernelInstruction::~PhiKernelInstruction() { delete phi_kernel_; }
++PhiKernelInstruction::~PhiKernelInstruction() {
++  // phi_kernel_ is managed by KernelFactory, not owned by this class
++  // Setting to nullptr is sufficient - KernelFactory handles cleanup
++  // Note: Do NOT access phi_kernel_->* as the underlying kernel functions
++  // may be in unloaded shared libraries (custom device .so)
++  phi_kernel_ = nullptr;
++}
+ 
+ void PhiKernelInstruction::Run() {
+   if (FLAGS_check_cuda_error) [[unlikely]] {
+diff --git a/paddle/fluid/framework/operator.cc b/paddle/fluid/framework/operator.cc
+index deb8d8762b..73792c6b0d 100644
+--- a/paddle/fluid/framework/operator.cc
++++ b/paddle/fluid/framework/operator.cc
+@@ -1122,7 +1122,15 @@ OperatorWithKernel::OperatorWithKernel(const std::string& type,
+                                        const AttributeMap& attrs)
+     : OperatorBase(type, inputs, outputs, attrs), impl_(nullptr) {}
+ 
+-OperatorWithKernel::~OperatorWithKernel() = default;
++OperatorWithKernel::~OperatorWithKernel() {
++  // phi_kernel_ and other members may point to kernels in custom device .so
++  // which may be unloaded before this destructor runs
++  // Release ownership without deleting to prevent accessing invalid pointers
++  phi_kernel_.release();
++  kernel_signature_.release();
++  arg_map_fn_.release();
++  impl_.release();
++}
+ 
+ bool ExecutionContext::HasInput(const std::string& name) const {
+   auto* var = InputVar(name);
+diff --git a/python/paddle/base/__init__.py b/python/paddle/base/__init__.py
+index cb78461dd3..a9c649870f 100644
+--- a/python/paddle/base/__init__.py
++++ b/python/paddle/base/__init__.py
+@@ -202,7 +202,16 @@ __bootstrap__()
+ monkey_patch_tensor()
+ 
+ # NOTE(Aurelius84): clean up ExecutorCacheInfo in advance manually.
+-atexit.register(core.clear_executor_cache)
++# 清理 executor cache 避免 PirInterpreter 在退出时析构崩溃
++def _cleanup_on_exit():
++    import gc
++    gc.collect()
++    try:
++        core.clear_executor_cache()
++    except:
++        pass
++
++atexit.register(_cleanup_on_exit)
+ atexit.register(core.pir.clear_cinn_compilation_cache)
+ 
+ # NOTE(Aganlengzi): clean up KernelFactory in advance manually.
+ 

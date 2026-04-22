@@ -18,3 +18,9 @@ cmake_install.cmake
 Makefile
 *.cmake
 CMakeCache.txt
+tests/*.json
+tests/*.keyfile
+
+tests/*.log
+
+tests/*.ciphertext

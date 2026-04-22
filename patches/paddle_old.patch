@@ -1,32 +1,36 @@
-diff --git a/.gitmodules b/.gitmodules
-index 9cc275e82c..a1397e9e53 100644
---- a/.gitmodules
-+++ b/.gitmodules
-@@ -50,10 +50,10 @@
- 	path = third_party/glog
- 	url = https://github.com/google/glog.git
- 	ignore = dirty
--[submodule "third_party/eigen3"]
--	path = third_party/eigen3
--	url = https://gitlab.com/libeigen/eigen.git
--	ignore = dirty
-+# [submodule "third_party/eigen3"]
-+# 	path = third_party/eigen3
-+# 	url = https://gitlab.com/libeigen/eigen.git
-+# 	ignore = dirty
- [submodule "third_party/cub"]
- 	path = third_party/cub
- 	url = https://github.com/NVIDIA/cub.git
-
+diff --git a/cmake/external/eigen.cmake b/cmake/external/eigen.cmake
+index 6790d961f8..37b841bfc4 100644
+--- a/cmake/external/eigen.cmake
++++ b/cmake/external/eigen.cmake
+@@ -42,14 +42,14 @@ endif()
+ file(TO_NATIVE_PATH "${PADDLE_SOURCE_DIR}/patches/eigen/TensorRandom.h.patch"
+      tensor_random_header)
+ # See: [Why calling some `git` commands before `patch`?]
+-set(EIGEN_PATCH_COMMAND
+-    git checkout -- Eigen/src/Core/arch/SSE/Complex.h
+-    unsupported/Eigen/CXX11/src/Tensor/TensorRandom.h && git checkout
+-    ${EIGEN_TAG} && git apply ${tensor_random_header})
++# set(EIGEN_PATCH_COMMAND
++#     git checkout -- Eigen/src/Core/arch/SSE/Complex.h
++#     unsupported/Eigen/CXX11/src/Tensor/TensorRandom.h && git checkout
++#     ${EIGEN_TAG} && git apply ${tensor_random_header})
+ if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+   file(TO_NATIVE_PATH ${PADDLE_SOURCE_DIR}/patches/eigen/Complex.h.patch
+        complex_header)
+-  set(EIGEN_PATCH_COMMAND ${EIGEN_PATCH_COMMAND} && git apply ${complex_header})
++  # set(EIGEN_PATCH_COMMAND ${EIGEN_PATCH_COMMAND} && git apply ${complex_header})
+ endif()
+ 
+ set(EIGEN_INCLUDE_DIR ${SOURCE_DIR})
 diff --git a/paddle/fluid/operators/fused/CMakeLists.txt b/paddle/fluid/operators/fused/CMakeLists.txt
-index 8d445b39ae..2abd80ca7d 100755
+index 8d445b39ae..504e7b6293 100755
 --- a/paddle/fluid/operators/fused/CMakeLists.txt
 +++ b/paddle/fluid/operators/fused/CMakeLists.txt
 @@ -39,6 +39,11 @@ if(WITH_GPU OR WITH_ROCM)
      op_library(fused_multi_transformer_int8_op)
    endif()
  
-+  if (1)
++  if 1
 +  op_library(fused_gemm_epilogue_op)
 +  endif()
 +
@@ -178,10 +182,10 @@ index 092365a961..8bd3f9fcea 100644
  
    for (int offset = warpSize / 2; offset > 0; offset /= 2)
 diff --git a/paddle/phi/common/float16.h b/paddle/phi/common/float16.h
-index d970878dc2..cb33f31fbb 100644
+index d970878dc2..fe0382ccad 100644
 --- a/paddle/phi/common/float16.h
 +++ b/paddle/phi/common/float16.h
-@@ -105,8 +105,12 @@ struct PADDLE_ALIGN(2) float16 {
+@@ -105,8 +105,9 @@ struct PADDLE_ALIGN(2) float16 {
  #endif
  
    HOSTDEVICE inline explicit float16(float val) {
@@ -189,10 +193,7 @@ index d970878dc2..cb33f31fbb 100644
 -    (defined(__HIPCC__) || (defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 300))
 +// #if defined(PADDLE_CUDA_FP16) && \
 +//     (defined(__HIPCC__) || (defined(__CUDA_ARCH__) && __CUDA_ARCH__ >= 300))
-+//     WITH_GPU=
-+#if defined(PADDLE_WITH_CUDA)
-+    // #error ">>> 探测成功：PADDLE_WITH_GPU 已定义，代码进入了此分支！ <<<"
-+// #if (1)
++#if 1
      half tmp = __float2half(val);
      x = *reinterpret_cast<uint16_t*>(&tmp);
  
@@ -431,7 +432,7 @@ index fc86cc09d1..037f020d00 100644
    });
  #else
 diff --git a/paddle/phi/kernels/funcs/blas/blaslt_gemm_search.h b/paddle/phi/kernels/funcs/blas/blaslt_gemm_search.h
-index 5c8778832d..da86ff2c2c 100644
+index aab18dd414..683c323f53 100644
 --- a/paddle/phi/kernels/funcs/blas/blaslt_gemm_search.h
 +++ b/paddle/phi/kernels/funcs/blas/blaslt_gemm_search.h
 @@ -628,7 +628,13 @@ class CublasLtAlgoCache {
@@ -459,38 +460,6 @@ index 5c8778832d..da86ff2c2c 100644
  
          for (const auto& [seed, algo] : algo_caches_) {
            outfile << seed << " ";
-diff --git a/paddle/phi/kernels/funcs/cublaslt.h b/paddle/phi/kernels/funcs/cublaslt.h
-index f4edadd3ce..c664276bc7 100644
---- a/paddle/phi/kernels/funcs/cublaslt.h
-+++ b/paddle/phi/kernels/funcs/cublaslt.h
-@@ -40,19 +40,19 @@ class CublasLtHelper {
-   CublasLtHelper(int m, int k, int n, cublasLtHandle_t handle)
-       : handle_(handle), alpha_(1), beta_(0), m_(m), k_(k), n_(n) {
-     cublasStatus_t status;
--#if CUBLAS_VER_MAJOR < 11
--    cudaDataType_t cudaComputeType = CUDA_R_32I;
--#else
-+// #if CUBLAS_VER_MAJOR < 11
-+//     cudaDataType_t cudaComputeType = CUDA_R_32I;
-+// #else
-     cublasComputeType_t cudaComputeType = CUBLAS_COMPUTE_32I;
--#endif
-+// #endif
- 
-     // matmul desc
--#if CUBLAS_VER_MAJOR < 11
--    status = dynload::cublasLtMatmulDescCreate(&matmul_desc_, cudaComputeType);
--#else
-+// #if CUBLAS_VER_MAJOR < 11
-+//     status = dynload::cublasLtMatmulDescCreate(&matmul_desc_, cudaComputeType);
-+// #else
-     status = dynload::cublasLtMatmulDescCreate(
-         &matmul_desc_, cudaComputeType, CUDA_R_32I);
--#endif
-+// #endif
- 
-     PADDLE_ENFORCE_EQ(
-         status,
 diff --git a/paddle/phi/kernels/funcs/embedding_grad.h b/paddle/phi/kernels/funcs/embedding_grad.h
 index 461e6e2474..48a64ae9ce 100644
 --- a/paddle/phi/kernels/funcs/embedding_grad.h
@@ -527,10 +496,10 @@ index 6435688914..f81f5246af 100644
  #endif
    }
 diff --git a/paddle/phi/kernels/funcs/fft.cu b/paddle/phi/kernels/funcs/fft.cu
-index 80527049b3..f89464fdbf 100644
+index da92193d10..ae3b84f9be 100644
 --- a/paddle/phi/kernels/funcs/fft.cu
 +++ b/paddle/phi/kernels/funcs/fft.cu
-@@ -172,7 +172,7 @@ void exec_fft(const GPUContext& dev_ctx,
+@@ -172,7 +172,7 @@ void exec_fft(const phi::GPUContext& dev_ctx,
    int64_t device_id = dev_ctx.GetPlace().GetDeviceId();
    FFTConfig* config = nullptr;
    std::unique_ptr<FFTConfig> config_ = nullptr;
@@ -540,7 +509,7 @@ index 80527049b3..f89464fdbf 100644
    if (using_cache) {
      FFTConfigCache& plan_cache = get_fft_plan_cache(device_id);
 diff --git a/paddle/phi/kernels/funcs/layer_norm_impl.cu.h b/paddle/phi/kernels/funcs/layer_norm_impl.cu.h
-index 9416a36c45..67b56f66e3 100644
+index 93540f1df6..5fa8d3ae4a 100644
 --- a/paddle/phi/kernels/funcs/layer_norm_impl.cu.h
 +++ b/paddle/phi/kernels/funcs/layer_norm_impl.cu.h
 @@ -36,11 +36,11 @@ template <typename T>
@@ -601,7 +570,7 @@ index dff1033db4..0098123818 100644
  }
  
 diff --git a/paddle/phi/kernels/funcs/top_k_function_cuda.h b/paddle/phi/kernels/funcs/top_k_function_cuda.h
-index d9209f8c67..9d2a4dc646 100644
+index 13670ffc90..f47ee23d31 100644
 --- a/paddle/phi/kernels/funcs/top_k_function_cuda.h
 +++ b/paddle/phi/kernels/funcs/top_k_function_cuda.h
 @@ -30,11 +30,11 @@ limitations under the License. */
@@ -618,7 +587,7 @@ index d9209f8c67..9d2a4dc646 100644
  #endif
  #define MAX_NUM_THREADS 1024
  
-@@ -194,21 +194,56 @@ __device__ __forceinline__ void AddTo(Pair<T> topk[],
+@@ -196,21 +196,56 @@ __device__ __forceinline__ void AddTo(Pair<T> topk[],
    for (int k = beam_size - 2; k >= 0; k--) {
      if (largest) {
        if (topk[k] < p) {
@@ -680,7 +649,7 @@ index d9209f8c67..9d2a4dc646 100644
  }
  
  template <typename T, int BlockSize>
-@@ -237,24 +272,24 @@ __device__ __forceinline__ void GetTopK(Pair<T> topk[],
+@@ -239,24 +274,24 @@ __device__ __forceinline__ void GetTopK(Pair<T> topk[],
  template <typename T, int BlockSize>
  __device__ __forceinline__ void GetTopK(Pair<T> topk[],
                                          const T* src,
@@ -712,7 +681,7 @@ index d9209f8c67..9d2a4dc646 100644
          }
        }
      }
-@@ -281,7 +316,9 @@ __device__ __forceinline__ void ThreadGetTopK(Pair<T> topk[],
+@@ -283,7 +318,9 @@ __device__ __forceinline__ void ThreadGetTopK(Pair<T> topk[],
      } else {
        for (int k = 0; k < MaxLength; k++) {
          if (k < MaxLength - (*beam)) {
@@ -723,7 +692,7 @@ index d9209f8c67..9d2a4dc646 100644
          } else {
            if (largest) {
              topk[k].set(-static_cast<T>(INFINITY), -1);
-@@ -291,8 +328,10 @@ __device__ __forceinline__ void ThreadGetTopK(Pair<T> topk[],
+@@ -293,8 +330,10 @@ __device__ __forceinline__ void ThreadGetTopK(Pair<T> topk[],
          }
        }
        if (!(*is_empty)) {
@@ -735,7 +704,7 @@ index d9209f8c67..9d2a4dc646 100644
        }
      }
  
-@@ -353,6 +392,8 @@ __device__ __forceinline__ void BlockReduce(Pair<T> shared_max[],
+@@ -355,6 +394,8 @@ __device__ __forceinline__ void BlockReduce(Pair<T> shared_max[],
        shared_max[wid] = input_now;
      }
      __syncthreads();
@@ -744,7 +713,7 @@ index d9209f8c67..9d2a4dc646 100644
      if (largest) {
        input_now = (tid < BlockSize / WARP_SIZE)
                        ? shared_max[lane]
-@@ -367,27 +408,32 @@ __device__ __forceinline__ void BlockReduce(Pair<T> shared_max[],
+@@ -369,27 +410,32 @@ __device__ __forceinline__ void BlockReduce(Pair<T> shared_max[],
        if (lane == 0) shared_max[0] = input_now;
      }
      __syncthreads();
@@ -783,7 +752,7 @@ index d9209f8c67..9d2a4dc646 100644
          break;
      }
    }
-@@ -476,16 +522,17 @@ struct Bitfield<unsigned int> {
+@@ -478,16 +524,17 @@ struct Bitfield<unsigned int> {
                                                               int pos,
                                                               int len) {
      unsigned int ret;
@@ -805,7 +774,7 @@ index d9209f8c67..9d2a4dc646 100644
      return ret;
    }
  };
-@@ -496,7 +543,9 @@ struct Bitfield<uint64_t> {
+@@ -498,7 +545,9 @@ struct Bitfield<uint64_t> {
                                                           int pos,
                                                           int len) {
      uint64_t ret;
@@ -816,7 +785,7 @@ index d9209f8c67..9d2a4dc646 100644
      return ret;
    }
  
-@@ -505,9 +554,9 @@ struct Bitfield<uint64_t> {
+@@ -507,9 +556,9 @@ struct Bitfield<uint64_t> {
                                                           int pos,
                                                           int len) {
      uint64_t ret;
@@ -829,7 +798,7 @@ index d9209f8c67..9d2a4dc646 100644
      return ret;
    }
  };
-@@ -625,14 +674,20 @@ struct RadixTypeConfig<phi::bfloat16> {
+@@ -627,14 +676,20 @@ struct RadixTypeConfig<phi::bfloat16> {
  /*---------------------------Helper Functions------------------*/
  __device__ __forceinline__ int GetLaneId() {
    int lane_id;
@@ -854,7 +823,7 @@ index d9209f8c67..9d2a4dc646 100644
  }
  
  template <typename T, bool KillDependency, class Function>
-@@ -882,7 +937,8 @@ __global__ void GatherKthValue(const T* input,
+@@ -884,7 +939,8 @@ __global__ void GatherKthValue(const T* input,
  
    // 1. Find the k-th value
    T kth_value = static_cast<T>(0);
@@ -864,16 +833,16 @@ index d9209f8c67..9d2a4dc646 100644
        cur_input, k, num_cols, shared_mem, &kth_value);
  
    __shared__ int64_t block_min_idx;
-@@ -1315,3 +1371,4 @@ bool SortTopk(const GPUContext& dev_ctx,
+@@ -1317,3 +1373,4 @@ bool SortTopk(const phi::GPUContext& dev_ctx,
  }
  }  // namespace funcs
  }  // namespace phi
 +//
 diff --git a/paddle/phi/kernels/fusion/gpu/fused_layernorm_residual_dropout_bias.h b/paddle/phi/kernels/fusion/gpu/fused_layernorm_residual_dropout_bias.h
-index f64a8fbaf3..00cd813041 100644
+index 25c9fa597e..e98d833943 100644
 --- a/paddle/phi/kernels/fusion/gpu/fused_layernorm_residual_dropout_bias.h
 +++ b/paddle/phi/kernels/fusion/gpu/fused_layernorm_residual_dropout_bias.h
-@@ -637,9 +637,6 @@ __global__ __launch_bounds__(THREADS_PER_CTA) void fused_fast_ln_fwd_kernel(
+@@ -638,9 +638,6 @@ __global__ __launch_bounds__(THREADS_PER_CTA) void fused_fast_ln_fwd_kernel(
          RandVec<VecSize>(&state, rand);
  #pragma unroll
          for (int jt = 0; jt < VecSize; jt++) {
@@ -884,7 +853,7 @@ index f64a8fbaf3..00cd813041 100644
          }
        }
 diff --git a/paddle/phi/kernels/fusion/gpu/masked_multihead_attention_kernel.cu b/paddle/phi/kernels/fusion/gpu/masked_multihead_attention_kernel.cu
-index 7b4ecf2c75..a437271b07 100644
+index e6f66c92f1..b294f7a476 100644
 --- a/paddle/phi/kernels/fusion/gpu/masked_multihead_attention_kernel.cu
 +++ b/paddle/phi/kernels/fusion/gpu/masked_multihead_attention_kernel.cu
 @@ -15,7 +15,7 @@
@@ -897,7 +866,7 @@ index 7b4ecf2c75..a437271b07 100644
  namespace phi {
  namespace fusion {
 diff --git a/paddle/phi/kernels/fusion/gpu/qkv_unpack_mha_kernel.cu b/paddle/phi/kernels/fusion/gpu/qkv_unpack_mha_kernel.cu
-index a9350224f6..9d17a55c4d 100644
+index d947eb1a32..06d0efef4c 100644
 --- a/paddle/phi/kernels/fusion/gpu/qkv_unpack_mha_kernel.cu
 +++ b/paddle/phi/kernels/fusion/gpu/qkv_unpack_mha_kernel.cu
 @@ -15,7 +15,7 @@
@@ -909,21 +878,8 @@ index a9350224f6..9d17a55c4d 100644
  
  namespace phi {
  namespace fusion {
-diff --git a/paddle/phi/kernels/gpu/cross_entropy_grad_kernel.cu b/paddle/phi/kernels/gpu/cross_entropy_grad_kernel.cu
-index db240283d6..8d6a23e2cd 100644
---- a/paddle/phi/kernels/gpu/cross_entropy_grad_kernel.cu
-+++ b/paddle/phi/kernels/gpu/cross_entropy_grad_kernel.cu
-@@ -171,7 +171,7 @@ void CrossEntropyWithSoftmaxGradGPUKernel(const GPUContext& dev_ctx,
-                                           DenseTensor* logits_grad) {
-   PADDLE_ENFORCE_EQ(
-       dev_ctx.GetPlace().GetType(),
--      AllocationType::GPU,
-+      AllocationType::CUSTOM,
-       common::errors::Unavailable("softmax_with_cross_entropy operator's "
-                                   "CUDA kernel only runs on GPU device."));
-   const T* loss_grad_data = loss_grad.data<T>();
 diff --git a/paddle/phi/kernels/gpu/gelu_funcs.h b/paddle/phi/kernels/gpu/gelu_funcs.h
-index 087669f8a0..9845bdb47a 100644
+index 29fa252e96..4ae72b0935 100644
 --- a/paddle/phi/kernels/gpu/gelu_funcs.h
 +++ b/paddle/phi/kernels/gpu/gelu_funcs.h
 @@ -29,13 +29,13 @@ namespace phi {
@@ -948,7 +904,7 @@ index 087669f8a0..9845bdb47a 100644
  }
  
 diff --git a/paddle/phi/kernels/gpu/lstsq_kernel.cu b/paddle/phi/kernels/gpu/lstsq_kernel.cu
-index 9f03f17dbb..93482cdc56 100644
+index 75a8f71d8c..cb21e9e301 100644
 --- a/paddle/phi/kernels/gpu/lstsq_kernel.cu
 +++ b/paddle/phi/kernels/gpu/lstsq_kernel.cu
 @@ -21,7 +21,7 @@
@@ -960,8 +916,48 @@ index 9f03f17dbb..93482cdc56 100644
  #include "paddle/phi/kernels/impl/qr_kernel_impl.h"
  #include "paddle/phi/kernels/impl/tril_triu_kernel_impl.h"
  #include "paddle/phi/kernels/lstsq_kernel.h"
+diff --git a/paddle/phi/kernels/impl/gammaincc_kernel_impl.h b/paddle/phi/kernels/impl/gammaincc_kernel_impl.h
+index 4a28600c38..d96495b7aa 100644
+--- a/paddle/phi/kernels/impl/gammaincc_kernel_impl.h
++++ b/paddle/phi/kernels/impl/gammaincc_kernel_impl.h
+@@ -56,8 +56,8 @@ HOSTDEVICE T igam(const T a, const T x) {
+ 
+ template <typename T>
+ HOSTDEVICE T igamc(const T a, const T x) {
+-  static T big = 4.503599627370496e15;
+-  static T biginv = 2.22044604925031308085e-16;
++  const static T big = 4.503599627370496e15;
++  const static T biginv = 2.22044604925031308085e-16;
+ 
+   if ((x <= T{0}) || (a <= T{0})) return (T{1.0});
+ 
+diff --git a/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h b/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h
+index c627cc1264..b3941570ee 100644
+--- a/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h
++++ b/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h
+@@ -20,8 +20,8 @@
+ namespace phi {
+ template <typename T>
+ HOSTDEVICE T digamma_positive_domain(T x) {
+-  static T c = T{8.5};
+-  static T euler_mascheroni = T{0.57721566490153286060};
++  const static T c = T{8.5};
++  const static T euler_mascheroni = T{0.57721566490153286060};
+   T r;
+   T value;
+   T x2;
+@@ -54,7 +54,7 @@ HOSTDEVICE T digamma_positive_domain(T x) {
+ 
+ template <typename T>
+ HOSTDEVICE T digamma(T x) {
+-  static T pi = T{3.14159265358979323846};
++  const static T pi = T{3.14159265358979323846};
+ 
+   if (x == T{0.0}) {
+     T inf = std::numeric_limits<T>::infinity();
+
 diff --git a/paddle/phi/kernels/gpudnn/softmax_gpudnn.h b/paddle/phi/kernels/gpudnn/softmax_gpudnn.h
-index 4752513c48..1c109d17ce 100644
+index be6ee4f854..1f507c99f4 100644
 --- a/paddle/phi/kernels/gpudnn/softmax_gpudnn.h
 +++ b/paddle/phi/kernels/gpudnn/softmax_gpudnn.h
 @@ -111,7 +111,7 @@ __device__ __forceinline__ void WarpReduceSum(T* sum) {
@@ -982,7 +978,7 @@ index 4752513c48..1c109d17ce 100644
        sum[i] = max(sum[i], max_val);
      }
    }
-@@ -2779,27 +2779,7 @@ void SoftmaxForwardCUDAKernelDriverImpl(const GPUContext& dev_ctx,
+@@ -2678,27 +2678,7 @@ void SoftmaxForwardCUDAKernelDriverImpl(const GPUContext& dev_ctx,
        using T4 = typename VecT4<T>::Type;
        using T2 = typename VecT2<T>::Type;
  
@@ -1011,7 +1007,7 @@ index 4752513c48..1c109d17ce 100644
          SwitchWarpSoftmaxForward<T, T, IndexType, LogMode>(blocks,
                                                             threads,
                                                             dev_ctx,
-@@ -2809,14 +2789,41 @@ void SoftmaxForwardCUDAKernelDriverImpl(const GPUContext& dev_ctx,
+@@ -2708,14 +2688,41 @@ void SoftmaxForwardCUDAKernelDriverImpl(const GPUContext& dev_ctx,
                                                             dim,
                                                             dim,
                                                             dim_log2);
@@ -1059,80 +1055,50 @@ index 4752513c48..1c109d17ce 100644
      }
    } else {
      LaunchNormalSoftmaxForward<T, IndexType, LogMode>(
-diff --git a/paddle/phi/kernels/impl/gammaincc_kernel_impl.h b/paddle/phi/kernels/impl/gammaincc_kernel_impl.h
-index 47a8ef2666..2870f6cbd6 100644
---- a/paddle/phi/kernels/impl/gammaincc_kernel_impl.h
-+++ b/paddle/phi/kernels/impl/gammaincc_kernel_impl.h
-@@ -56,8 +56,8 @@ HOSTDEVICE T igam(const T a, const T x) {
- 
- template <typename T>
- HOSTDEVICE T igamc(const T a, const T x) {
--  static T big = 4.503599627370496e15;
--  static T biginv = 2.22044604925031308085e-16;
-+  const static T big = 4.503599627370496e15;
-+  const static T biginv = 2.22044604925031308085e-16;
- 
-   if ((x <= T{0}) || (a <= T{0})) return (T{1.0});
- 
-diff --git a/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h b/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h
-index f4e0d75298..d6bdce5d27 100644
---- a/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h
-+++ b/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h
-@@ -20,8 +20,8 @@
- namespace phi {
- template <typename T>
- HOSTDEVICE T digamma_positive_domain(T x) {
--  static T c = T{8.5};
--  static T euler_mascheroni = T{0.57721566490153286060};
-+  const static T c = T{8.5};
-+  const static T euler_mascheroni = T{0.57721566490153286060};
-   T r;
-   T value;
-   T x2;
-@@ -54,7 +54,7 @@ HOSTDEVICE T digamma_positive_domain(T x) {
- 
- template <typename T>
- HOSTDEVICE T digamma(T x) {
--  static T pi = T{3.14159265358979323846};
-+  const static T pi = T{3.14159265358979323846};
- 
-   if (x == T{0.0}) {
-     T inf = std::numeric_limits<T>::infinity();
-diff --git a/third_party/flashattn b/third_party/flashattn
-index 056a75f5af..196115f865 160000
---- a/third_party/flashattn
-+++ b/third_party/flashattn
-@@ -1 +1 @@
--Subproject commit 056a75f5afa5a4dc8c9dc8732935310225d1690a
-+Subproject commit 196115f865fc7f18a7ab55f32510415a788cb85d
-diff --git a/third_party/sleef b/third_party/sleef
---- a/third_party/sleef
-+++ b/third_party/sleef
-@@ -1 +1 @@
--Subproject commit 7623d6cfa2712462880fa63a4d0f0b5f775d1a83
-+Subproject commit 7623d6cfa2712462880fa63a4d0f0b5f775d1a83-dirty
-diff --git a/cmake/external/eigen.cmake b/cmake/external/eigen.cmake
-index 6790d961f8..37b841bfc4 100644
---- a/cmake/external/eigen.cmake
-+++ b/cmake/external/eigen.cmake
-@@ -42,14 +42,14 @@ endif()
- file(TO_NATIVE_PATH "${PADDLE_SOURCE_DIR}/patches/eigen/TensorRandom.h.patch"
-      tensor_random_header)
- # See: [Why calling some `git` commands before `patch`?]
--set(EIGEN_PATCH_COMMAND
--    git checkout -- Eigen/src/Core/arch/SSE/Complex.h
--    unsupported/Eigen/CXX11/src/Tensor/TensorRandom.h && git checkout
--    ${EIGEN_TAG} && git apply ${tensor_random_header})
-+# set(EIGEN_PATCH_COMMAND
-+#     git checkout -- Eigen/src/Core/arch/SSE/Complex.h
-+#     unsupported/Eigen/CXX11/src/Tensor/TensorRandom.h && git checkout
-+#     ${EIGEN_TAG} && git apply ${tensor_random_header})
- if(CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
-   file(TO_NATIVE_PATH ${PADDLE_SOURCE_DIR}/patches/eigen/Complex.h.patch
-        complex_header)
--  set(EIGEN_PATCH_COMMAND ${EIGEN_PATCH_COMMAND} && git apply ${complex_header})
-+  # set(EIGEN_PATCH_COMMAND ${EIGEN_PATCH_COMMAND} && git apply ${complex_header})
- endif()
- 
- set(EIGEN_INCLUDE_DIR ${SOURCE_DIR})
- 
+
+diff --git a/paddle/phi/kernels/gpu/cross_entropy_grad_kernel.cu b/paddle/phi/kernels/gpu/cross_entropy_grad_kernel.cu
+index 0a415200df..b0732e28f3 100644
+--- a/paddle/phi/kernels/gpu/cross_entropy_grad_kernel.cu
++++ b/paddle/phi/kernels/gpu/cross_entropy_grad_kernel.cu
+@@ -147,7 +147,7 @@ void CrossEntropyWithSoftmaxGradGPUKernel(const GPUContext& dev_ctx,
+                                           DenseTensor* logits_grad) {
+   PADDLE_ENFORCE_EQ(
+       dev_ctx.GetPlace().GetType(),
+-      AllocationType::GPU,
++      AllocationType::CUSTOM,
+       common::errors::Unavailable("softmax_with_cross_entropy operator's "
+                                   "CUDA kernel only runs on GPU device."));
+   const T* loss_grad_data = loss_grad.data<T>();
+diff --git a/paddle/phi/kernels/funcs/cublaslt.h b/paddle/phi/kernels/funcs/cublaslt.h
+index d8bc15926b..6071baf340 100644
+--- a/paddle/phi/kernels/funcs/cublaslt.h
++++ b/paddle/phi/kernels/funcs/cublaslt.h
+@@ -40,19 +40,19 @@ class CublasLtHelper {
+   CublasLtHelper(int m, int k, int n, cublasLtHandle_t handle)
+       : handle_(handle), alpha_(1), beta_(0), m_(m), k_(k), n_(n) {
+     cublasStatus_t status;
+-#if CUBLAS_VER_MAJOR < 11
+-    cudaDataType_t cudaComputeType = CUDA_R_32I;
+-#else
++// #if CUBLAS_VER_MAJOR < 11
++//     cudaDataType_t cudaComputeType = CUDA_R_32I;
++// #else
+     cublasComputeType_t cudaComputeType = CUBLAS_COMPUTE_32I;
+-#endif
++// #endif
+
+     // matmul desc
+-#if CUBLAS_VER_MAJOR < 11
+-    status = dynload::cublasLtMatmulDescCreate(&matmul_desc_, cudaComputeType);
+-#else
++// #if CUBLAS_VER_MAJOR < 11
++//     status = dynload::cublasLtMatmulDescCreate(&matmul_desc_, cudaComputeType);
++// #else
+     status = dynload::cublasLtMatmulDescCreate(
+         &matmul_desc_, cudaComputeType, CUDA_R_32I);
+-#endif
++// #endif
+
+     PADDLE_ENFORCE_EQ(
+         status,
+         

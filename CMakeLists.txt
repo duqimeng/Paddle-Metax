@@ -98,8 +98,7 @@ include(generic)
 include(flashattn)
 include(cutlass)
 include(dgc)
-# include(warpctc)
-# include(warprnnt)
+# warpctc and warprnnt are included by Paddle's third_party.cmake
 
 set(PLUGIN_VERSION ${PADDLE_VERSION})
 
@@ -885,6 +884,7 @@ target_link_libraries(
   protobuf
   external_error_proto
   dgc
+  # warpctc
   ${WARPCTC_LIBRARIES}
   ${WARPRNNT_LIBRARIES}
   )
