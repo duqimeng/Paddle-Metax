@@ -46,7 +46,6 @@ if(CUSTOM_DEVICE_CMAKE_ARGS)
   endforeach()
 endif()
 
-
 if(NOT DEFINED PADDLE_WARP_SIZE)
   set(PADDLE_WARP_SIZE 64)
 endif()
@@ -68,8 +67,6 @@ set(PYTHON_VERSION ${PY_VERSION})
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 message(STATUS "CMAKE_MODULE_PATH: ${CMAKE_MODULE_PATH}")
 
-
-
 set(WITH_MKLML ON)
 if(WITH_ARM)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
@@ -86,27 +83,20 @@ if(WITH_ARM)
   add_definitions(-DPADDLE_WITH_ARM)
 endif()
 
+# include(paddle) set(THIRD_PARTY_PATH "${PADDLE_SOURCE_DIR}/build/third_party"
+# CACHE PATH "Third party libraries directory.")
 
-# include(paddle)
-# set(THIRD_PARTY_PATH
-#     "${PADDLE_SOURCE_DIR}/build/third_party"
-#     CACHE PATH "Third party libraries directory.")
-
-# include(version)
-# include(cblas)
+# include(version) include(cblas)
 include(flashattn)
 include(cutlass)
 include(dgc)
 include(generic)
-# include(warpctc)
-# include(warprnnt)
-
+# include(warpctc) include(warprnnt)
 
 set(PLUGIN_VERSION ${PADDLE_VERSION})
 
 list(APPEND CMAKE_MODULE_PATH "${PADDLE_SOURCE_DIR}/cmake"
      "${PADDLE_SOURCE_DIR}/cmake/external")
-
 
 enable_language(CUDA)
 find_package(CUDA REQUIRED)
@@ -124,7 +114,6 @@ macro(UNSET_VAR VAR_NAME)
   unset(${VAR_NAME})
 endmacro()
 
-
 set(WITH_GPU ON)
 include(cuda)
 if(WITH_CINN)
@@ -133,13 +122,8 @@ if(WITH_CINN)
   add_subdirectory(cinn)
 endif()
 
-# include(gflags)
-# include(glog)
-# include(eigen)
-# include(xxhash)
-# include(zlib)
-# include(protobuf)
-# include(generate_pb)
+# include(gflags) include(glog) include(eigen) include(xxhash) include(zlib)
+# include(protobuf) include(generate_pb)
 
 set(PROTO_FILE "${PADDLE_SOURCE_DIR}/paddle/phi/core/external_error.proto")
 get_filename_component(PROTO_WE "${PROTO_FILE}" NAME_WE)
@@ -174,9 +158,8 @@ set_target_properties(external_error_proto PROPERTIES POSITION_INDEPENDENT_CODE
                                                       ON)
 set(METAX_EXTERNAL_DEPS_TARGET metax_external_deps)
 
-add_custom_target(${METAX_EXTERNAL_DEPS_TARGET} DEPENDS eigen3 zlib warpctc warprnnt
-                                                             protobuf)
-
+add_custom_target(${METAX_EXTERNAL_DEPS_TARGET} DEPENDS eigen3 zlib warpctc
+                                                        warprnnt protobuf)
 
 file(
   GLOB
@@ -859,7 +842,6 @@ if(WITH_CINN)
                              PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/cinn")
 endif()
 
-
 target_include_directories(
   ${TARGET_NAME}
   PRIVATE ${PADDLE_SOURCE_DIR}
@@ -873,22 +855,20 @@ target_include_directories(
 
 target_link_libraries(
   ${TARGET_NAME}
-  PRIVATE
-  ${PADDLE_CORE_LIB}
-  ${PHI_CORE_LIB}
-  cutlass
-  flashattn
-  glog
-  eigen3
-  gflags
-  xxhash
-  protobuf
-  external_error_proto
-  dgc
-  # warpctc
-  ${WARPCTC_LIBRARIES}
-  ${WARPRNNT_LIBRARIES}
-  )
+  PRIVATE ${PADDLE_CORE_LIB}
+          ${PHI_CORE_LIB}
+          cutlass
+          flashattn
+          glog
+          eigen3
+          gflags
+          xxhash
+          protobuf
+          external_error_proto
+          dgc
+          # warpctc
+          ${WARPCTC_LIBRARIES}
+          ${WARPRNNT_LIBRARIES})
 
 if(TARGET phi_core)
   target_link_libraries(${TARGET_NAME} PRIVATE phi_core)
@@ -930,14 +910,11 @@ target_compile_definitions(
          SPARSELT_LIB_NAME="libcusparseLt.so"
          CUPTI_LIB_PATH="/root/cu-bridge/CUDA_DIR/extras/CUPTI/lib64")
 
-
-         
 set(METAX_PADDLE_CUSTOM_DEVICE_DIR
     "${PADDLE_BINARY_DIR}/python/paddle/paddle_custom_device")
 add_custom_command(
   OUTPUT ${METAX_PADDLE_CUSTOM_DEVICE_DIR}/.timestamp
-  COMMAND ${CMAKE_COMMAND} -E make_directory
-          ${METAX_PADDLE_CUSTOM_DEVICE_DIR}
+  COMMAND ${CMAKE_COMMAND} -E make_directory ${METAX_PADDLE_CUSTOM_DEVICE_DIR}
   COMMAND ${CMAKE_COMMAND} -E make_directory
           ${METAX_PADDLE_CUSTOM_DEVICE_DIR}/include
   COMMAND ${CMAKE_COMMAND} -E touch
@@ -946,12 +923,8 @@ add_custom_command(
           ${METAX_PADDLE_CUSTOM_DEVICE_DIR}/
   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_CURRENT_SOURCE_DIR}/headers
           ${METAX_PADDLE_CUSTOM_DEVICE_DIR}/include
-  COMMAND ${CMAKE_COMMAND} -E touch
-          ${METAX_PADDLE_CUSTOM_DEVICE_DIR}/.timestamp
+  COMMAND ${CMAKE_COMMAND} -E touch ${METAX_PADDLE_CUSTOM_DEVICE_DIR}/.timestamp
   DEPENDS ${TARGET_NAME}
   COMMENT "Copy metax plugin files to Paddle build directory")
 add_custom_target(custom_device_package_copy
                   DEPENDS ${METAX_PADDLE_CUSTOM_DEVICE_DIR}/.timestamp)
-
-
-

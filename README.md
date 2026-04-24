@@ -12,6 +12,8 @@ Please refer to the following steps to compile, install and verify paddlepaddle_
 # Clone PaddleCustomDevice source code
 git clone https://github.com/PaddlePaddle/Paddle-Metax.git
 
+# Pull Paddle dependencies and third-party libraries
+git submodule sync --recursive && git submodule update --init --recursive
 
 # Install
 bash build_inc.sh

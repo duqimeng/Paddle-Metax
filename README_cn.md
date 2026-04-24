@@ -12,7 +12,8 @@ English | [简体中文](./README_cn.md)
 # 克隆 PaddleCustomDevice 源代码
 git clone https://github.com/PaddlePaddle/Paddle-Metax.git
 
-
+# 拉取paddle依赖和三方库
+git submodule sync --recursive && git submodule update --init --recursive
 
 # 编译和安装
 bash build_inc.sh

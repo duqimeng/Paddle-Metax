@@ -24,6 +24,7 @@
 #include <cstdio>
 #include <sstream>
 #include <thread>
+
 #include "paddle/phi/backends/dynload/cupti.h"
 
 pid_t gettid() { return syscall(SYS_gettid); }
