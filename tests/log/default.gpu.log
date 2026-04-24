@@ -1,4 +1,0 @@
-index,uuid,driver_version,name,gpu_serial,display_active,display_mode
-
-pid,process_name,gpu_uuid,gpu_name,used_memory
-

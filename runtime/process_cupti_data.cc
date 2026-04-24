@@ -349,6 +349,13 @@ CuptiRuntimeCbidStr::CuptiRuntimeCbidStr() {
 #undef REGISTER_RUNTIME_CBID_STR
 }
 
+void profiler_add_runtime_trace_event(C_Profiler prof, void* event) {
+  paddle::platform::RuntimeTraceEvent re =
+      *reinterpret_cast<paddle::platform::RuntimeTraceEvent*>(event);
+  reinterpret_cast<paddle::platform::TraceEventCollector*>(prof)
+      ->AddRuntimeEvent(std::move(re));
+}
+
 void AddApiRecord(const CUpti_ActivityAPI* api,
                   uint64_t start_ns,
                   const std::unordered_map<uint32_t, uint64_t> tid_mapping,

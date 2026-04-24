@@ -15,18 +15,37 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# rm -r Paddle/third_party/eigen3
 cd patches
+
+echo ">>> Unzipping Eigen_3.4.0_paddle.zip..."
+
 unzip Eigen_3.4.0_paddle.zip
+
+echo ">>> Renaming folder to 'eigen3'..."
 mv Eigen_3.4.0_paddle eigen3
+
 cd ..
+
+echo ">>> Removing old eigen3 directory from Paddle/third_party..."
 rm -r Paddle/third_party/eigen3
+
+echo ">>> Copying new eigen3 to Paddle/third_party..."
+
 cp -r patches/eigen3/ Paddle/third_party/eigen3
+
+
+echo ">>> Cleaning up temporary patch files..."
+
+
 rm -r patches/eigen3
-# cp patch/tmp/mixed_vector* ../../Paddle/paddle/phi/core
+
 cd Paddle/
+
+echo ">>> Applying main patch: paddle.patch..."
+
 git apply --verbose ../patches/paddle.patch
+echo ">>> Applying fix patch: patch_nullptr.patch..."
 
 git apply --verbose ../patches/patch_nullptr.patch
+
 cd -
-# cp -r patch/intrinsics.cuh ../../Paddle/third_party/warpctc/include/contrib/moderngpu/include/device/

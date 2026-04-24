@@ -98,7 +98,8 @@ include(generic)
 include(flashattn)
 include(cutlass)
 include(dgc)
-# warpctc and warprnnt are included by Paddle's third_party.cmake
+# include(warpctc)
+# include(warprnnt)
 
 set(PLUGIN_VERSION ${PADDLE_VERSION})
 
@@ -173,7 +174,7 @@ set_target_properties(external_error_proto PROPERTIES POSITION_INDEPENDENT_CODE
                                                       ON)
 set(METAX_EXTERNAL_DEPS_TARGET metax_external_deps)
 
-add_custom_target(${METAX_EXTERNAL_DEPS_TARGET} DEPENDS eigen3 zlib
+add_custom_target(${METAX_EXTERNAL_DEPS_TARGET} DEPENDS eigen3 zlib warpctc warprnnt
                                                              protobuf)
 
 

@@ -18,7 +18,7 @@ set -e
 
 pip uninstall paddlepaddle-metax -y || echo "No existing paddlepaddle-metax installation found, skipping uninstallation."
 
-bash clean_paddle.sh || { echo "Error: Failed to clean paddle!"; exit 1; }
+# bash clean_paddle.sh || { echo "Error: Failed to clean paddle!"; exit 1; }
 
 
 
@@ -122,8 +122,8 @@ fi
 
 echo "-------------------------------------------------------------------"
 
-pip install python/dist/paddlepaddle_metax-3.4.0.dev20260415-cp310-cp310-linux_x86_64.whl --force-reinstall
+# pip install python/dist/paddlepaddle_metax-3.4.0.dev20260415-cp310-cp310-linux_x86_64.whl --force-reinstall
+pip install python/dist/paddlepaddle_metax-*.whl --force-reinstall --no-deps
 
-
-cd /root/paddle-metax/Paddle-Metax/tests
-bash run_test.sh -j1
+# cd /root/paddle-metax/Paddle-Metax/tests
+# bash run_test.sh -i /root/paddle-metax/Paddle-Metax/tests/test.txt

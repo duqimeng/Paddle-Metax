@@ -96,13 +96,6 @@ done
 
 export GLOG_v=$TEST_LOG_LEVEL
 
-
-# cmake .. -DTEST_LIST_FILE=$TEST_LIST_FILE -DLOG_OUTPUT_DIR=$TEST_LOG_OUTPUT_DIR -DIGNORE_BLOCKS="$IGNORE_BLOCKS"
-
-# cmake --build .
-
-# ctest -j$TEST_PARALLEL_NUM --output-on-failure
-
 # 定义日志文件路径
 BUILD_LOG="build.log"
 TEST_LOG="test.log"
@@ -121,7 +114,6 @@ if [ ${PIPESTATUS[0]} -ne 0 ]; then
 fi
 
 echo ">>> 开始执行编译 (Build)..."
-# 2. 编译阶段日志
 cmake --build . \
     2>&1 | tee "$BUILD_LOG"
 
@@ -131,15 +123,17 @@ if [ ${PIPESTATUS[0]} -ne 0 ]; then
 fi
 
 echo ">>> 开始执行测试 (Test)..."
-# 3. 测试阶段日志
-# 注意：ctest 自带输出，我们将其全部捕获
 ctest -j"$TEST_PARALLEL_NUM" --output-on-failure \
     2>&1 | tee "$TEST_LOG"
 
-# 检查 ctest 的退出状态
 if [ ${PIPESTATUS[0]} -ne 0 ]; then
     echo "❌ 测试未通过，请查看 $TEST_LOG"
-    # 这里不一定要 exit 1，取决于你的 CI 流程是否允许测试失败
 fi
+
+echo ">>> 删除编译缓存产物"
+rm -r ../../tests/profiler_log/
+rm -r ../../tests/log/
+rm -r ../../tests/testdebug/
+
 
 echo ">>> 所有操作完成。"
