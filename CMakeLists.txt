@@ -93,20 +93,20 @@ endif()
 #     CACHE PATH "Third party libraries directory.")
 
 # include(version)
-include(generic)
 # include(cblas)
 include(flashattn)
 include(cutlass)
 include(dgc)
+include(generic)
 # include(warpctc)
 # include(warprnnt)
+
 
 set(PLUGIN_VERSION ${PADDLE_VERSION})
 
 list(APPEND CMAKE_MODULE_PATH "${PADDLE_SOURCE_DIR}/cmake"
      "${PADDLE_SOURCE_DIR}/cmake/external")
 
-# set(PADDLE_BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR})
 
 enable_language(CUDA)
 find_package(CUDA REQUIRED)
@@ -955,32 +955,3 @@ add_custom_target(custom_device_package_copy
 
 
 
-# # packing wheel package
-# configure_file(${CMAKE_CURRENT_SOURCE_DIR}/setup.py.in
-#                ${CMAKE_CURRENT_BINARY_DIR}/setup.py)
-
-# add_custom_command(
-#   TARGET ${TARGET_NAME}
-#   POST_BUILD
-#   COMMAND ${CMAKE_COMMAND} -E remove -f ${CMAKE_CURRENT_BINARY_DIR}/python/
-#   COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/python/
-#   COMMAND ${CMAKE_COMMAND} -E make_directory
-#           ${CMAKE_CURRENT_BINARY_DIR}/python/include/
-#   COMMAND ${CMAKE_COMMAND} -E make_directory
-#           ${CMAKE_CURRENT_BINARY_DIR}/python/paddle_custom_device/
-#   COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/headers
-#           ${CMAKE_CURRENT_BINARY_DIR}/python/include/
-#   COMMAND
-#     ${CMAKE_COMMAND} -E copy_if_different
-#     ${CMAKE_CURRENT_BINARY_DIR}/lib${TARGET_NAME}.so
-#     ${CMAKE_CURRENT_BINARY_DIR}/python/paddle_custom_device/
-#   COMMENT "Creating plugin directories------>>>")
-
-# add_custom_command(
-#   OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/python/.timestamp
-#   COMMAND ${Python_EXECUTABLE} ${CMAKE_CURRENT_BINARY_DIR}/setup.py bdist_wheel
-#   DEPENDS ${TARGET_NAME}
-#   COMMENT "Packing whl packages------>>>")
-
-# add_custom_target(python_package ALL
-#                   DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/python/.timestamp)

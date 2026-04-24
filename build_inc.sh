@@ -21,7 +21,6 @@ pip uninstall paddlepaddle-metax -y || echo "No existing paddlepaddle-metax inst
 # bash clean_paddle.sh || { echo "Error: Failed to clean paddle!"; exit 1; }
 
 
-
 PYTHON_VERSION=${PYTHON_VERSION:-$(python3 -V 2>&1|awk '{print $2}')}
 
 
@@ -29,7 +28,6 @@ export MACA_AI_VERSION=$(cat /opt/maca/Version.txt | cut -d':' -f2)
 WITH_CINN=${WITH_CINN:-OFF}
 
 SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-# CURRENT_DIR=$(pwd)
 PLATFORM_ID=$(uname -i)
 PADDLE_SOURCE_DIR="${SCRIPT_DIR}/Paddle"
 PADDLE_BUILD_DIR="${PADDLE_SOURCE_DIR}/build"
@@ -118,12 +116,7 @@ else
   echo " Building for non-ARM architecture, using default target settings."
   make_maca -j$(nproc) VERBOSE=1 2>&1 | tee build_416.log
 fi
-# popd
 
 echo "-------------------------------------------------------------------"
 
-# pip install python/dist/paddlepaddle_metax-3.4.0.dev20260415-cp310-cp310-linux_x86_64.whl --force-reinstall
-pip install python/dist/paddlepaddle_metax-*.whl --force-reinstall --no-deps
-
-# cd /root/paddle-metax/Paddle-Metax/tests
-# bash run_test.sh -i /root/paddle-metax/Paddle-Metax/tests/test.txt
+pip install python/dist/paddlepaddle_metax-*.whl --force-reinstall
