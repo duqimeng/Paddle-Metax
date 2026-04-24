@@ -1,1 +1,1 @@
-../../../../../../Paddle/paddle/phi/backends/dynload/magma.h
+../../../../../Paddle/paddle/phi/backends/dynload/magma.h

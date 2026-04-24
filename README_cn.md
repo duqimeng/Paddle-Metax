@@ -22,5 +22,5 @@ bash build_inc.sh
 ```bash
 # 运行测试
 cd tests
-bash run_test.sh
+bash run_test.sh -j3
 ```

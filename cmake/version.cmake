@@ -1,1 +1,1 @@
-/root/paddle-metax/paddle-metax/Paddle/cmake/version.cmake
+../Paddle/cmake/version.cmake

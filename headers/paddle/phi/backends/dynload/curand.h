@@ -1,1 +1,1 @@
-../../../../../../Paddle/paddle/phi/backends/dynload/curand.h
+../../../../../Paddle/paddle/phi/backends/dynload/curand.h
