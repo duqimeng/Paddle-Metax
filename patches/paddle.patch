@@ -1268,4 +1268,25 @@ index ce4b43343a..4407023101 100644
               -DWITH_ROCM=${WITH_ROCM}
               -DWITH_OMP=${USE_OMP}
               -DNVCC_FLAGS_EXTRA=${NVCC_FLAGS_EXTRA}
+diff --git a/python/setup.py.in b/python/setup.py.in
+index 2ea8c02ac9..3952e6de17 100644
+--- a/python/setup.py.in
++++ b/python/setup.py.in
+@@ -2024,9 +2024,15 @@ if os.getenv("SKIP_STUB_GEN", '').lower() not in [
+ packages, package_data = extend_type_hints_package_data(packages, package_data, '${PADDLE_BINARY_DIR}')
+ 
+ 
++# maca ai version
++maca_ai_version = os.getenv('MACA_AI_VERSION')
++if not maca_ai_version:
++    maca_ai_version = "0.0.0"
++
++
+ with redirect_stdout():
+     setup(name='${PACKAGE_NAME}',
+-        version='${PADDLE_VERSION}',
++        version='${PADDLE_VERSION}'+ "+maca" + maca_ai_version,
+         description='Parallel Distributed Deep Learning',
+         long_description=long_description,
+         long_description_content_type="text/markdown",
  

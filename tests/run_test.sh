@@ -23,7 +23,7 @@ TEST_PATH2="${SCRIPT_DIR}/../python/tests"
 TEST_PATH3="${SCRIPT_DIR}/../Paddle/test/rnn"
 export PYTHONPATH="${LEGACY_TEST_PATH}:${PYTHONPATH}:${TEST_PATH1}:${TEST_PATH2}:${TEST_PATH3}"
 export PADDLE_XCCL_BACKEND=metax_gpu
-export CUDA_VISIBLE_DEVICES=2
+export CUDA_VISIBLE_DEVICES=0
 
 # export
 # sleep 1000000

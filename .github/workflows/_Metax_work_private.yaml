@@ -1,0 +1,67 @@
+name: Metax GPU Private Test
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [master, develop, release/**]
+  schedule:
+    - cron: "0 20 * * *"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  metax-gpu-test:
+    runs-on: paddle-duqimeng-runner-set
+    steps:
+      - name: Checkout repository
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+          git clone \
+            --reference-if-able /home/runner/Paddle-Metax \
+            --depth=1 \
+            --shallow-submodules \
+            --jobs=8 \
+            --branch ${{ github.base_ref || github.ref_name}} \
+            --recurse-submodules \
+            https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git .
+
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            git fetch origin pull/${{ github.event.pull_request.number }}/head:pull/${{ github.event.pull_request.number }}/head
+            git checkout pull/${{ github.event.pull_request.number }}/head
+          fi
+
+
+      - name: compile
+        run: |
+          bash build_inc_CI.sh
+
+
+      - name: run test
+        run: |
+          cd tests
+          bash run_test.sh -j 4 -b "default"
+
+
+      - name: push whl
+        env:
+          PR_ID: ${{ github.event.pull_request.number }}
+          COMMIT_ID: ${{ github.event.pull_request.head.sha }}
+        run: |
+          pip install bce-python-sdk==0.8.74
+          export AK=paddle
+          export SK=paddle
+          if [ ! -f "BosClient.py" ]; then
+            wget -q --no-proxy https://xly-devops.bj.bcebos.com/home/bos_retry.tar.gz --no-check-certificate
+            tar xf bos_retry.tar.gz
+          fi
+          cp Paddle/build/python/dist/paddlepaddle_metax*.whl .
+          python BosClient.py paddle_metax*.whl paddle-github-action/Paddle-Metax/metax_gpu/${PR_ID}/${COMMIT_ID}
+          cd Paddle/build/python/dist/
+          ossutil ls oss://opensource-ci/paddle/
+          ossutil cat oss://opensource-ci/paddle/
+          ossutil cp ./paddle_metax-*.whl oss://opensource-ci/paddle/ -f
