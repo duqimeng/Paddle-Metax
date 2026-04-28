@@ -64,7 +64,7 @@ jobs:
             tar xf bos_retry.tar.gz
           fi
           cp Paddle/build/python/dist/paddlepaddle_metax*.whl .
-          python BosClient.py paddle_metax*.whl paddle-github-action/Paddle-Metax/metax_gpu/${PR_ID}/${COMMIT_ID}
+          python BosClient.py paddlepaddle_metax*.whl paddle-github-action/Paddle-Metax/metax_gpu/${PR_ID}/${COMMIT_ID}
           cd Paddle/build/python/dist/
           ossutil ls oss://opensource-ci/paddle/
           ossutil cat oss://opensource-ci/paddle/
