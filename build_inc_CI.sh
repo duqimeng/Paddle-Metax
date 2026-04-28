@@ -59,6 +59,6 @@ echo "✅ 脚本执行完毕！"
 echo "📌 已撤销本地修改，并更新到 Paddle 最新的 develop (dev) 分支代码。"
 
 cd ..
-apt-get install -y patchelf
+sudo apt-get install -y patchelf
 bash change_patch.sh
 bash build_inc.sh
