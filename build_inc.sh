@@ -106,7 +106,7 @@ cd Paddle/build || { echo "Error: Failed to enter Paddle/build directory!"; exit
 
 
 # 在数组展开后追加 -DCMAKE_BUILD_TYPE=Debug
-cmake_maca "${PADDLE_CMAKE_ARGS[@]}" -DCMAKE_BUILD_TYPE=Debug "${PADDLE_SOURCE_DIR}" 2>&1 | tee cmake_config_416.log \
+cmake_maca "${PADDLE_CMAKE_ARGS[@]}" -DCMAKE_BUILD_TYPE=Debug "${PADDLE_SOURCE_DIR}" 2>&1 | tee cmake_config.log \
   || { echo "Error: CMake configuration failed! Check cmake_config.log for details."; exit 1; }
 
 
@@ -114,7 +114,7 @@ if [[ "${PLATFORM_ID}" == "aarch64" ]]; then
   env TARGET=ARMV8 make_maca -j$(nproc) || { echo "Error: Paddle build failed!"; exit 1; }
 else
   echo " Building for non-ARM architecture, using default target settings."
-  make_maca -j$(nproc) VERBOSE=1 2>&1 | tee build_416.log
+  make_maca -j$(nproc) 2>&1 | tee build.log
 fi
 
 echo "-------------------------------------------------------------------"
