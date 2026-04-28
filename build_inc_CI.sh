@@ -30,7 +30,6 @@ pip  uninstall paddle-metax-gpu -y
 # update_paddle_dev.sh
 
 chown -R $USER:$USER Paddle/
-chown -R $USER:$USER Paddle-Metax/
 # Step 1: 撤销所有本地修改（已跟踪的文件，不包括新文件）
 cd Paddle/
 echo "🔄 正在撤销所有本地修改（git checkout .）..."
