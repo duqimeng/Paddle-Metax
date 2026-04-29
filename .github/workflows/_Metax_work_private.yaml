@@ -68,4 +68,4 @@ jobs:
           cd Paddle/build/python/dist/
           ossutil ls oss://opensource-ci/paddle/
           ossutil cat oss://opensource-ci/paddle/
-          ossutil cp ./paddle_metax-*.whl oss://opensource-ci/paddle/ -f
+          ossutil cp ./paddlepaddle_metax-*.whl oss://opensource-ci/paddle/ -f
