@@ -45,11 +45,11 @@ git log -1 --oneline
 
 # ——————————————————————————test————————————————————————————————
 
-git checkout bb09abe
-echo "🔗 当前分支: $(git branch --show-current)"
-echo "📌 最新 commit hash (短): $(git rev-parse --short HEAD)"
-echo "📌 最新 commit 信息:"
-git log -1 --oneline
+# git checkout bb09abe
+# echo "🔗 当前分支: $(git branch --show-current)"
+# echo "📌 最新 commit hash (短): $(git rev-parse --short HEAD)"
+# echo "📌 最新 commit 信息:"
+# git log -1 --oneline
 # ——————————————————————————test————————————————————————————————
 
 # 提示完成
