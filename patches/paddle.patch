@@ -1046,30 +1046,6 @@ index 4752513c48..1c109d17ce 100644
      }
    } else {
      LaunchNormalSoftmaxForward<T, IndexType, LogMode>(
-diff --git a/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h b/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h
-index f4e0d75298..d6bdce5d27 100644
---- a/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h
-+++ b/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h
-@@ -20,8 +20,8 @@
- namespace phi {
- template <typename T>
- HOSTDEVICE T digamma_positive_domain(T x) {
--  static T c = T{8.5};
--  static T euler_mascheroni = T{0.57721566490153286060};
-+  const static T c = T{8.5};
-+  const static T euler_mascheroni = T{0.57721566490153286060};
-   T r;
-   T value;
-   T x2;
-@@ -54,7 +54,7 @@ HOSTDEVICE T digamma_positive_domain(T x) {
- 
- template <typename T>
- HOSTDEVICE T digamma(T x) {
--  static T pi = T{3.14159265358979323846};
-+  const static T pi = T{3.14159265358979323846};
- 
-   if (x == T{0.0}) {
-     T inf = std::numeric_limits<T>::infinity();
 diff --git a/third_party/flashattn b/third_party/flashattn
 index 056a75f5af..196115f865 160000
 --- a/third_party/flashattn
