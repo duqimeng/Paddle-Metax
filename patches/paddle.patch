@@ -197,19 +197,19 @@ index d970878dc2..cb33f31fbb 100644
      x = *reinterpret_cast<uint16_t*>(&tmp);
  
 diff --git a/paddle/phi/core/enforce.h b/paddle/phi/core/enforce.h
-index 024a7de73e..66b373d698 100644
+index d07575028c..ec262da03a 100644
 --- a/paddle/phi/core/enforce.h
 +++ b/paddle/phi/core/enforce.h
 @@ -97,7 +97,7 @@ inline bool is_error(bool stat) { return !stat; }
  
- void ThrowWarnInternal(const std::string& message);
+ PADDLE_API void ThrowWarnInternal(const std::string& message);
  
 -#if defined(__CUDA_ARCH__)
 +#if defined(__CUDACC__)
  // For cuda, the assertions can affect performance and it is therefore
  // recommended to disable them in production code
  // https://docs.nvidia.com/cuda/cuda-c-programming-guide/index.html#assertion
-@@ -109,7 +109,7 @@ void ThrowWarnInternal(const std::string& message);
+@@ -109,7 +109,7 @@ PADDLE_API void ThrowWarnInternal(const std::string& message);
               __LINE__,                                             \
               #_IS_NOT_ERROR,                                       \
               ##__VA_ARGS__);                                       \
@@ -909,19 +909,6 @@ index a9350224f6..9d17a55c4d 100644
  
  namespace phi {
  namespace fusion {
-diff --git a/paddle/phi/kernels/gpu/cross_entropy_grad_kernel.cu b/paddle/phi/kernels/gpu/cross_entropy_grad_kernel.cu
-index db240283d6..8d6a23e2cd 100644
---- a/paddle/phi/kernels/gpu/cross_entropy_grad_kernel.cu
-+++ b/paddle/phi/kernels/gpu/cross_entropy_grad_kernel.cu
-@@ -171,7 +171,7 @@ void CrossEntropyWithSoftmaxGradGPUKernel(const GPUContext& dev_ctx,
-                                           DenseTensor* logits_grad) {
-   PADDLE_ENFORCE_EQ(
-       dev_ctx.GetPlace().GetType(),
--      AllocationType::GPU,
-+      AllocationType::CUSTOM,
-       common::errors::Unavailable("softmax_with_cross_entropy operator's "
-                                   "CUDA kernel only runs on GPU device."));
-   const T* loss_grad_data = loss_grad.data<T>();
 diff --git a/paddle/phi/kernels/gpu/gelu_funcs.h b/paddle/phi/kernels/gpu/gelu_funcs.h
 index 087669f8a0..9845bdb47a 100644
 --- a/paddle/phi/kernels/gpu/gelu_funcs.h
@@ -1059,21 +1046,6 @@ index 4752513c48..1c109d17ce 100644
      }
    } else {
      LaunchNormalSoftmaxForward<T, IndexType, LogMode>(
-diff --git a/paddle/phi/kernels/impl/gammaincc_kernel_impl.h b/paddle/phi/kernels/impl/gammaincc_kernel_impl.h
-index 47a8ef2666..2870f6cbd6 100644
---- a/paddle/phi/kernels/impl/gammaincc_kernel_impl.h
-+++ b/paddle/phi/kernels/impl/gammaincc_kernel_impl.h
-@@ -56,8 +56,8 @@ HOSTDEVICE T igam(const T a, const T x) {
- 
- template <typename T>
- HOSTDEVICE T igamc(const T a, const T x) {
--  static T big = 4.503599627370496e15;
--  static T biginv = 2.22044604925031308085e-16;
-+  const static T big = 4.503599627370496e15;
-+  const static T biginv = 2.22044604925031308085e-16;
- 
-   if ((x <= T{0}) || (a <= T{0})) return (T{1.0});
- 
 diff --git a/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h b/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h
 index f4e0d75298..d6bdce5d27 100644
 --- a/paddle/phi/kernels/impl/gammaln_grad_kernel_impl.h
@@ -1290,3 +1262,156 @@ index 2ea8c02ac9..3952e6de17 100644
          long_description=long_description,
          long_description_content_type="text/markdown",
  
+diff --git a/paddle/phi/kernels/funcs/top_k_cuda_kernel.h b/paddle/phi/kernels/funcs/top_k_cuda_kernel.h
+index 368cb21c21..f0f99fbd2f 100644
+--- a/paddle/phi/kernels/funcs/top_k_cuda_kernel.h
++++ b/paddle/phi/kernels/funcs/top_k_cuda_kernel.h
+@@ -167,7 +167,7 @@ struct Bitfield<unsigned int> {
+                                                              int pos,
+                                                              int len) {
+     unsigned int ret;
+-#if defined(__HIPCC__)
++#if defined(PADDLE_WITH_CUDA)
+     ret = (val >> pos) & ((1u << len) - 1u);
+ #else
+     asm("bfe.u32 %0, %1, %2, %3;" : "=r"(ret) : "r"(val), "r"(pos), "r"(len));
+@@ -178,7 +178,7 @@ struct Bitfield<unsigned int> {
+   static __device__ __forceinline__ unsigned int setBitfield(
+       unsigned int val, unsigned int to_insert, int pos, int len) {
+     unsigned int ret;
+-#if defined(__HIPCC__)
++#if defined(PADDLE_WITH_CUDA)
+     unsigned int mask = ((1u << len) - 1u) << pos;
+     ret = (val & ~mask) | ((to_insert << pos) & mask);
+ #else
+@@ -196,7 +196,7 @@ struct Bitfield<uint64_t> {
+                                                          int pos,
+                                                          int len) {
+     uint64_t ret;
+-#if defined(__HIPCC__)
++#if defined(PADDLE_WITH_CUDA)
+     ret = (val >> pos) & ((1ULL << len) - 1ULL);
+ #else
+     asm("bfe.u64 %0, %1, %2, %3;" : "=l"(ret) : "l"(val), "r"(pos), "r"(len));
+@@ -209,7 +209,7 @@ struct Bitfield<uint64_t> {
+                                                          int pos,
+                                                          int len) {
+     uint64_t ret;
+-#if defined(__HIPCC__)
++#if defined(PADDLE_WITH_CUDA)
+     uint64_t mask = ((1ULL << len) - 1ULL) << pos;
+     ret = (val & ~mask) | ((to_insert << pos) & mask);
+ #else
+@@ -223,7 +223,7 @@ struct Bitfield<uint64_t> {
+ 
+ // --- getLaneId / getLaneMaskLe ---
+ __device__ __forceinline__ int getLaneId() {
+-#if defined(__HIPCC__)
++#if defined(PADDLE_WITH_CUDA)
+   return __lane_id();
+ #else
+   int laneId;
+@@ -233,7 +233,7 @@ __device__ __forceinline__ int getLaneId() {
+ }
+ 
+ __device__ __forceinline__ unsigned getLaneMaskLe() {
+-#if defined(__HIPCC__)
++#if defined(PADDLE_WITH_CUDA)
+   // HIP warp size is 64, construct mask for lanes <= current lane
+   return (getLaneId() == 63) ? 0xFFFFFFFFFFFFFFFFULL
+                              : (1ULL << (getLaneId() + 1)) - 1ULL;
+@@ -245,7 +245,7 @@ __device__ __forceinline__ unsigned getLaneMaskLe() {
+ }
+ 
+ __device__ __forceinline__ unsigned getLaneMaskLt() {
+-#if defined(__HIPCC__)
++#if defined(PADDLE_WITH_CUDA)
+   return (getLaneId() == 0) ? 0ULL : (1ULL << getLaneId()) - 1ULL;
+ #else
+   unsigned mask;
+diff --git a/paddle/phi/kernels/gpu/multiclass_nms3_kernel.cu b/paddle/phi/kernels/gpu/multiclass_nms3_kernel.cu
+index 7ced1fdc17..e49759ebb4 100644
+--- a/paddle/phi/kernels/gpu/multiclass_nms3_kernel.cu
++++ b/paddle/phi/kernels/gpu/multiclass_nms3_kernel.cu
+@@ -302,11 +302,11 @@ void SortScoresPerClassGPU(gpuStream_t stream,
+       begin_bit,
+       end_bit,
+       stream);
+-#ifdef PADDLE_WITH_HIP
+-  PADDLE_ENFORCE_GPU_SUCCESS(hipGetLastError());
+-#else
+-  PADDLE_ENFORCE_GPU_SUCCESS(cudaGetLastError());
+-#endif
++// #ifdef PADDLE_WITH_HIP
++//   PADDLE_ENFORCE_GPU_SUCCESS(hipGetLastError());
++// #else
++//   PADDLE_ENFORCE_GPU_SUCCESS(cudaGetLastError());
++// #endif
+ }
+ 
+ /* ===========
+@@ -611,11 +611,11 @@ void AllClassNMSGPU(gpuStream_t stream,
+       score_shift,
+       caffe_semantics);
+ 
+-#ifdef PADDLE_WITH_HIP
+-  PADDLE_ENFORCE_GPU_SUCCESS(hipGetLastError());
+-#else
+-  PADDLE_ENFORCE_GPU_SUCCESS(cudaGetLastError());
+-#endif
++// #ifdef PADDLE_WITH_HIP
++//   PADDLE_ENFORCE_GPU_SUCCESS(hipGetLastError());
++// #else
++//   PADDLE_ENFORCE_GPU_SUCCESS(cudaGetLastError());
++// #endif
+ }
+ 
+ /* ==================
+@@ -769,11 +769,11 @@ void GatherNMSOutputsGPU(gpuStream_t stream,
+                               reinterpret_cast<int*>(nmsed_valid_mask),
+                               clip_boxes,
+                               T_SCORE(score_shift));
+-#ifdef PADDLE_WITH_HIP
+-  PADDLE_ENFORCE_GPU_SUCCESS(hipGetLastError());
+-#else
+-  PADDLE_ENFORCE_GPU_SUCCESS(cudaGetLastError());
+-#endif
++// #ifdef PADDLE_WITH_HIP
++//   PADDLE_ENFORCE_GPU_SUCCESS(hipGetLastError());
++// #else
++//   PADDLE_ENFORCE_GPU_SUCCESS(cudaGetLastError());
++// #endif
+ }
+ 
+ template <typename T_SCORE>
+@@ -818,11 +818,11 @@ void SortScoresPerImageGPU(gpuStream_t stream,
+       begin_bit,
+       end_bit,
+       stream);
+-#ifdef PADDLE_WITH_HIP
+-  PADDLE_ENFORCE_GPU_SUCCESS(hipGetLastError());
+-#else
+-  PADDLE_ENFORCE_GPU_SUCCESS(cudaGetLastError());
+-#endif
++// #ifdef PADDLE_WITH_HIP
++//   PADDLE_ENFORCE_GPU_SUCCESS(hipGetLastError());
++// #else
++//   PADDLE_ENFORCE_GPU_SUCCESS(cudaGetLastError());
++// #endif
+ }
+ 
+ template <typename T>
+ 
+diff --git a/paddle/fluid/imperative/data_loader.cc b/paddle/fluid/imperative/data_loader.cc
+index 0ba86ba208..1ab4a620eb 100644
+--- a/paddle/fluid/imperative/data_loader.cc
++++ b/paddle/fluid/imperative/data_loader.cc
+@@ -171,7 +171,7 @@ void ThrowErrorIfLoadProcessFailed() {
+               "space of `/dev/shm`. Shared storage space needs to be greater "
+               "than (DataLoader Num * DataLoader queue capacity * 1 batch data "
+               "size).\n  You can solve this problem by increasing the shared "
+-              "storage space or reducing the queue capacity appropriately.\n",
++              "storage space or reducing the queue capacity appropriately.\n"
+               "  1. If run DataLoader by DataLoader.from_generator(...), queue "
+               "capacity is set by from_generator(..., capacity=xx, ...).\n"
+               "  2. If run DataLoader by DataLoader(dataset, ...), queue "
