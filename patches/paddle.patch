@@ -1391,3 +1391,151 @@ index 0ba86ba208..1ab4a620eb 100644
                "  1. If run DataLoader by DataLoader.from_generator(...), queue "
                "capacity is set by from_generator(..., capacity=xx, ...).\n"
                "  2. If run DataLoader by DataLoader(dataset, ...), queue "
+diff --git a/paddle/common/flags.cc b/paddle/common/flags.cc
+index 1110a88cdc..9b86cdd2f2 100644
+--- a/paddle/common/flags.cc
++++ b/paddle/common/flags.cc
+@@ -131,7 +131,7 @@ PHI_DEFINE_EXPORTED_bool(
+ 
+ // NOTE(zhiqiu): better to share the flags, otherwise we will have too many
+ // flags.
+-#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
++#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP) || defined(PADDLE_WITH_CUSTOM_DEVICE)
+ 
+ /**
+  * CUDA related related FLAG
+@@ -189,7 +189,7 @@ PHI_DEFINE_EXPORTED_string(
+     "share-memory only.");
+ #endif
+ 
+-#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
++#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP) || defined(PADDLE_WITH_CUSTOM_DEVICE)
+ /**
+  * CUDA related FLAG
+  * Name: FLAGS_cublaslt_exhaustive_search_times
+@@ -226,7 +226,7 @@ PHI_DEFINE_EXPORTED_bool(
+     true,
+     "Whether enable api kernel fallback to CPU one when not found");
+ 
+-#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
++#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP) || defined(PADDLE_WITH_CUSTOM_DEVICE)
+ /**
+  * CUDNN related FLAG
+  * Name: FLAGS_cudnn_deterministic
+@@ -353,7 +353,7 @@ PHI_DEFINE_EXPORTED_bool(
+  */
+ PHI_DEFINE_EXPORTED_bool(
+     cublas_allow_tf32,
+-    false,
++    true,
+     "Whether to allow using TensorFloat-32 (TF32) tensor cores for "
+     "matrix multiplication operators in cuBLAS on Ampere or newer GPUs. "
+     "Default is false.");
+@@ -396,7 +396,7 @@ PHI_DEFINE_EXPORTED_bool(
+     "batch_norm, default is False.");
+ #endif
+ 
+-#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
++#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP) || defined(PADDLE_WITH_CUSTOM_DEVICE)
+ 
+ /**
+  * NCCL related FLAG
+@@ -1005,7 +1005,7 @@ PHI_DEFINE_EXPORTED_string(trt_engine_serialized_path,
+  * Example:
+  * Note: Check kernel launch status after every kernel compute.
+  */
+-#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
++#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP) || defined(PADDLE_WITH_CUSTOM_DEVICE)
+ PHI_DEFINE_EXPORTED_bool(
+     check_kernel_launch,
+     false,
+@@ -1020,7 +1020,7 @@ PHI_DEFINE_EXPORTED_bool(
+  * Example:
+  * Note: Disable cudnn in conv2d.
+  */
+-#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
++#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP) || defined(PADDLE_WITH_CUSTOM_DEVICE)
+ PHI_DEFINE_EXPORTED_bool(conv2d_disable_cudnn,
+                          false,
+                          "Disable cudnn in conv2d");
+@@ -1038,7 +1038,7 @@ PHI_DEFINE_EXPORTED_bool(use_fast_math,
+  * Example:
+  * Note: Disable cudnn in conv3d.
+  */
+-#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
++#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP) || defined(PADDLE_WITH_CUSTOM_DEVICE)
+ PHI_DEFINE_EXPORTED_bool(conv3d_disable_cudnn,
+                          false,
+                          "Disable cudnn in conv3d");
+@@ -1506,7 +1506,7 @@ PHI_DEFINE_EXPORTED_bool(multi_node_sample_use_gpu_table,
+  * Note: nccl blocking wait.
+  */
+ 
+-#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
++#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP) || defined(PADDLE_WITH_CUSTOM_DEVICE)
+ PHI_DEFINE_EXPORTED_bool(nccl_blocking_wait, false, "nccl blocking wait");
+ #endif
+ 
+@@ -1523,7 +1523,7 @@ PHI_DEFINE_EXPORTED_bool(nccl_blocking_wait, false, "nccl blocking wait");
+ PHI_DEFINE_EXPORTED_bool(flagcx_blocking_wait, false, "flagcx blocking wait");
+ #endif
+ 
+-#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
++#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP) || defined(PADDLE_WITH_CUSTOM_DEVICE)
+ PHI_DEFINE_EXPORTED_bool(benchmark_nccl,
+                          false,
+                          "enable nccl debug mode to synchronize nccl comm");
+@@ -1536,7 +1536,7 @@ PHI_DEFINE_EXPORTED_bool(benchmark_nccl,
+  * Value Range: bool, default=false
+  */
+ 
+-#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
++#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP) || defined(PADDLE_WITH_CUSTOM_DEVICE)
+ PHI_DEFINE_EXPORTED_bool(enable_nccl_dynamic_check,
+                          false,
+                          "enable nccl dynamic checks");
+@@ -2369,7 +2369,7 @@ PHI_DEFINE_EXPORTED_bool(print_offload_info,
+                          false,
+                          "Whether to print the offload information.");
+ 
+-#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP)
++#if defined(PADDLE_WITH_CUDA) || defined(PADDLE_WITH_HIP) || defined(PADDLE_WITH_CUSTOM_DEVICE)
+ /**
+  * FlashAttention related FLAG
+  * Name: FLAGS_flash_attn_version
+diff --git a/paddle/phi/backends/context_pool.cc b/paddle/phi/backends/context_pool.cc
+index 660e520bcc..4a01bbaf80 100644
+--- a/paddle/phi/backends/context_pool.cc
++++ b/paddle/phi/backends/context_pool.cc
+@@ -21,6 +21,7 @@ limitations under the License. */
+ #include "paddle/phi/core/enforce.h"
+ 
+ COMMON_DECLARE_bool(use_default_stream);
++COMMON_DECLARE_bool(cublas_allow_tf32);
+ 
+ namespace phi {
+ 
+@@ -28,11 +29,21 @@ namespace phi {
+     defined(PADDLE_WITH_CUSTOM_DEVICE)
+ #if defined(PADDLE_WITH_CUSTOM_DEVICE)
+ bool allow_tf32_cublas = true;
++bool allow_tf32_cublas_is_set = false;
+ #else
+ bool allow_tf32_cublas = false;
++bool allow_tf32_cublas_is_set = false;
+ #endif
+-void SetAllowTF32Cublas(bool active) { allow_tf32_cublas = active; }
+-bool AllowTF32Cublas() { return allow_tf32_cublas; }
++void SetAllowTF32Cublas(bool active) {
++  allow_tf32_cublas = active;
++  allow_tf32_cublas_is_set = true;
++}
++bool AllowTF32Cublas() {
++  if (allow_tf32_cublas_is_set) {
++    return allow_tf32_cublas;
++  }
++  return FLAGS_cublas_allow_tf32;
++}
+ bool allow_tf32_cudnn = true;
+ void SetAllowTF32Cudnn(bool active) { allow_tf32_cudnn = active; }
+ bool AllowTF32Cudnn() { return allow_tf32_cudnn; }
