@@ -49,10 +49,10 @@ if ! git apply --verbose ../patches/paddle.patch; then
   exit 1
 fi
 
-echo ">>> Applying fix patch: patch_nullptr.patch..."
-if ! git apply --verbose ../patches/patch_nullptr.patch; then
-  echo ">>> ERROR: Failed to apply patch_nullptr.patch"
-  exit 1
-fi
+# echo ">>> Applying fix patch: patch_nullptr.patch..."
+# if ! git apply --verbose ../patches/patch_nullptr.patch; then
+#   echo ">>> ERROR: Failed to apply patch_nullptr.patch"
+#   exit 1
+# fi
 
 cd -
