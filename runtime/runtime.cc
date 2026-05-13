@@ -12,9 +12,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 #include <cuda_runtime.h>
 #include <cupti.h>
+#include <dlfcn.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <nccl.h>
@@ -1519,6 +1519,19 @@ C_Status GetParameterSettersForExecGraph(C_CudaGraph graph,
 }
 
 void InitPlugin(CustomRuntimeParams *params) {
+  // Increase our own reference count so dlclose() from Paddle's
+  // DeviceManager::Release() will not actually unload this .so.
+  // This prevents segfaults during shutdown when executor objects
+  // containing function pointers into this .so are destroyed after
+  // the atexit cleanup order would have unloaded us.
+  {
+    Dl_info info;
+    if (dladdr(reinterpret_cast<const void *>(&InitPlugin), &info) &&
+        info.dli_fname) {
+      dlopen(info.dli_fname, RTLD_LAZY);
+    }
+  }
+
   PADDLE_CUSTOM_RUNTIME_CHECK_VERSION(params);
   params->device_type = const_cast<char *>(DeviceType);
   params->sub_device_type = const_cast<char *>(SubDeviceType);
