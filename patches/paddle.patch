@@ -1084,7 +1084,7 @@ index 6790d961f8..37b841bfc4 100644
  
  set(EIGEN_INCLUDE_DIR ${SOURCE_DIR})
 diff --git a/cmake/external/warpctc.cmake b/cmake/external/warpctc.cmake
-index 17ef70b4a0..8aad2a9d3d 100644
+index 17ef70b4a0..dc1596ccc3 100644
 --- a/cmake/external/warpctc.cmake
 +++ b/cmake/external/warpctc.cmake
 @@ -35,6 +35,13 @@ else()
@@ -1110,7 +1110,19 @@ index 17ef70b4a0..8aad2a9d3d 100644
        patch -p1 <
        ${PADDLE_SOURCE_DIR}/patches/warpctc/CMakeLists.txt.rocm.patch && patch
        -p1 < ${PADDLE_SOURCE_DIR}/patches/warpctc/devicetypes.cuh.patch && patch
-@@ -93,23 +100,27 @@ if(WIN32)
+@@ -64,6 +71,11 @@ set(WARPCTC_LIB_DIR
+     "${WARPCTC_INSTALL_DIR}/lib"
+     CACHE PATH "Warp-ctc Library Directory" FORCE)
+ 
++set(WARPCTC_METAX_PATCH
++    "${PADDLE_SOURCE_DIR}/third_party/warpctc/warpctc.patch"
++)
++message(STATUS "warpctc: METAX patch at PATCH step: ${WARPCTC_METAX_PATCH}")
++
+ if(WIN32)
+   set(WARPCTC_LIBRARIES
+       "${WARPCTC_INSTALL_DIR}/bin/warpctc${CMAKE_SHARED_LIBRARY_SUFFIX}"
+@@ -93,23 +105,27 @@ if(WIN32)
    set(WARPCTC_CXX_FLAGS_DEBUG
        $<FILTER:${CMAKE_CXX_FLAGS_DEBUG},EXCLUDE,/Zc:inline>)
  else()
@@ -1149,7 +1161,7 @@ index 17ef70b4a0..8aad2a9d3d 100644
  
  ExternalProject_Add(
    extern_warpctc
-@@ -120,8 +131,9 @@ ExternalProject_Add(
+@@ -120,8 +136,14 @@ ExternalProject_Add(
    PATCH_COMMAND
    COMMAND ${WARPCTC_PATCH_COMMAND}
    COMMAND ${WARPCTC_PATCH_CUDA_COMMAND}
@@ -1157,11 +1169,16 @@ index 17ef70b4a0..8aad2a9d3d 100644
 -  #BUILD_ALWAYS    1
 +  COMMAND ${COPY_COMMAND}
 +  COMMAND ${WARPCTC_PATHCH_ROCM_COMMAND}
++  COMMAND ${CMAKE_COMMAND} -E echo
++          "warpctc: applying metax warpctc-corex.patch..."
++  COMMAND patch -p1 -i "${WARPCTC_METAX_PATCH}"
++  COMMAND ${CMAKE_COMMAND} -E echo
++          "warpctc: metax warpctc-corex.patch applied successfully."
 +  # BUILD_ALWAYS    1
    CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
               -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
               -DCMAKE_C_FLAGS=${WARPCTC_C_FLAGS}
-@@ -131,9 +143,9 @@ ExternalProject_Add(
+@@ -131,9 +153,9 @@ ExternalProject_Add(
               -DCMAKE_CXX_FLAGS_RELEASE=${WARPCTC_CXX_FLAGS_RELEASE}
               -DCMAKE_CXX_FLAGS_DEBUG=${WARPCTC_CXX_FLAGS_DEBUG}
               -DCMAKE_INSTALL_PREFIX=${WARPCTC_INSTALL_DIR}
@@ -1173,7 +1190,7 @@ index 17ef70b4a0..8aad2a9d3d 100644
               -DNVCC_FLAGS_EXTRA=${NVCC_FLAGS_EXTRA}
               -DWITH_TORCH=OFF
               -DCMAKE_DISABLE_FIND_PACKAGE_Torch=ON
-@@ -143,7 +155,6 @@ ExternalProject_Add(
+@@ -143,7 +165,6 @@ ExternalProject_Add(
               -DCMAKE_BUILD_TYPE=${THIRD_PARTY_BUILD_TYPE}
               -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
               ${EXTERNAL_OPTIONAL_ARGS}
@@ -1181,6 +1198,17 @@ index 17ef70b4a0..8aad2a9d3d 100644
               ${WARPCTC_CCBIN_OPTION}
    CMAKE_CACHE_ARGS
      -DCMAKE_BUILD_TYPE:STRING=${THIRD_PARTY_BUILD_TYPE}
+@@ -156,5 +177,7 @@ get_filename_component(WARPCTC_LIBRARY_PATH ${WARPCTC_LIBRARIES} DIRECTORY)
+ include_directories(${WARPCTC_INCLUDE_DIR}
+ )# For warpctc code to include its headers.
+ 
+-add_library(warpctc INTERFACE)
+-add_dependencies(warpctc extern_warpctc)
++add_library(warpctc STATIC IMPORTED GLOBAL)
++set_target_properties(
++  warpctc PROPERTIES IMPORTED_LOCATION ${WARPCTC_LIBRARIES}
++                     INTERFACE_INCLUDE_DIRECTORIES ${WARPCTC_INCLUDE_DIR})
+
 diff --git a/cmake/external/warprnnt.cmake b/cmake/external/warprnnt.cmake
 index ce4b43343a..4407023101 100644
 --- a/cmake/external/warprnnt.cmake
