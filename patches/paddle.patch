@@ -1084,7 +1084,7 @@ index 6790d961f8..37b841bfc4 100644
  
  set(EIGEN_INCLUDE_DIR ${SOURCE_DIR})
 diff --git a/cmake/external/warpctc.cmake b/cmake/external/warpctc.cmake
-index 17ef70b4a0..8aad2a9d3d 100644
+index 02e48a1edd..b74cc8106e 100644
 --- a/cmake/external/warpctc.cmake
 +++ b/cmake/external/warpctc.cmake
 @@ -35,6 +35,13 @@ else()
@@ -1101,16 +1101,23 @@ index 17ef70b4a0..8aad2a9d3d 100644
  endif()
  
  if(NOT WIN32 AND WITH_GPU)
-@@ -49,7 +56,7 @@ if(NOT WIN32 AND WITH_GPU)
- endif()
+@@ -50,13 +57,13 @@ endif()
  
  if(WITH_ROCM)
--  set(WARPCTC_PATCH_ROCM_COMMAND
-+  set(WARPCTC_PATHCH_ROCM_COMMAND
-       patch -p1 <
-       ${PADDLE_SOURCE_DIR}/patches/warpctc/CMakeLists.txt.rocm.patch && patch
-       -p1 < ${PADDLE_SOURCE_DIR}/patches/warpctc/devicetypes.cuh.patch && patch
-@@ -93,23 +100,27 @@ if(WIN32)
+   if(DEFINED PADDLE_ROCM_VERSION AND PADDLE_ROCM_VERSION GREATER_EQUAL 70000000)
+-    set(WARPCTC_PATCH_ROCM_COMMAND
++    set(WARPCTC_PATHCH_ROCM_COMMAND
+         patch -p1 <
+         ${PADDLE_SOURCE_DIR}/patches/warpctc/CMakeLists.txt.rocm.patch && patch
+         -p1 < ${PADDLE_SOURCE_DIR}/patches/warpctc/devicetypes.cuh.patch && cp
+         ${PADDLE_SOURCE_DIR}/cmake/hip.cmake cmake/hip.cmake)
+   else()
+-    set(WARPCTC_PATCH_ROCM_COMMAND
++    set(WARPCTC_PATHCH_ROCM_COMMAND
+         patch -p1 <
+         ${PADDLE_SOURCE_DIR}/patches/warpctc/CMakeLists.txt.rocm.patch && patch
+         -p1 < ${PADDLE_SOURCE_DIR}/patches/warpctc/devicetypes.cuh.patch &&
+@@ -113,23 +120,26 @@ if(WIN32)
    set(WARPCTC_CXX_FLAGS_DEBUG
        $<FILTER:${CMAKE_CXX_FLAGS_DEBUG},EXCLUDE,/Zc:inline>)
  else()
@@ -1145,35 +1152,38 @@ index 17ef70b4a0..8aad2a9d3d 100644
 +set(COPY_COMMAND
 +    ${CMAKE_COMMAND} -E copy "${SRC_FILE}" "${DST_DIR}"
 +)
-+
  
  ExternalProject_Add(
    extern_warpctc
-@@ -120,8 +131,9 @@ ExternalProject_Add(
+@@ -140,7 +150,13 @@ ExternalProject_Add(
    PATCH_COMMAND
    COMMAND ${WARPCTC_PATCH_COMMAND}
    COMMAND ${WARPCTC_PATCH_CUDA_COMMAND}
 -  COMMAND ${WARPCTC_PATCH_ROCM_COMMAND}
--  #BUILD_ALWAYS    1
 +  COMMAND ${COPY_COMMAND}
 +  COMMAND ${WARPCTC_PATHCH_ROCM_COMMAND}
-+  # BUILD_ALWAYS    1
++  COMMAND ${CMAKE_COMMAND} -E echo
++          "warpctc: applying metax warpctc-corex.patch..."
++  COMMAND patch -p1 -i "${WARPCTC_METAX_PATCH}"
++  COMMAND ${CMAKE_COMMAND} -E echo
++          "warpctc: metax warpctc-corex.patch applied successfully."
+   #BUILD_ALWAYS    1
    CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
               -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-              -DCMAKE_C_FLAGS=${WARPCTC_C_FLAGS}
-@@ -131,9 +143,9 @@ ExternalProject_Add(
+@@ -151,10 +167,10 @@ ExternalProject_Add(
               -DCMAKE_CXX_FLAGS_RELEASE=${WARPCTC_CXX_FLAGS_RELEASE}
               -DCMAKE_CXX_FLAGS_DEBUG=${WARPCTC_CXX_FLAGS_DEBUG}
               -DCMAKE_INSTALL_PREFIX=${WARPCTC_INSTALL_DIR}
 -             -DWITH_GPU=${WITH_GPU}
 +             -DWITH_GPU=ON
               -DWITH_ROCM=${WITH_ROCM}
+              ${WARPCTC_ROCM_CMAKE_ARGS}
 -             -DWITH_OMP=${USE_OMP}
 +             -DWITH_OMP=OFF
               -DNVCC_FLAGS_EXTRA=${NVCC_FLAGS_EXTRA}
               -DWITH_TORCH=OFF
               -DCMAKE_DISABLE_FIND_PACKAGE_Torch=ON
-@@ -143,7 +155,6 @@ ExternalProject_Add(
+@@ -164,7 +180,6 @@ ExternalProject_Add(
               -DCMAKE_BUILD_TYPE=${THIRD_PARTY_BUILD_TYPE}
               -DCUDA_TOOLKIT_ROOT_DIR=${CUDA_TOOLKIT_ROOT_DIR}
               ${EXTERNAL_OPTIONAL_ARGS}
@@ -1182,10 +1192,10 @@ index 17ef70b4a0..8aad2a9d3d 100644
    CMAKE_CACHE_ARGS
      -DCMAKE_BUILD_TYPE:STRING=${THIRD_PARTY_BUILD_TYPE}
 diff --git a/cmake/external/warprnnt.cmake b/cmake/external/warprnnt.cmake
-index ce4b43343a..4407023101 100644
+index 2a4ce28a12..4159985be0 100644
 --- a/cmake/external/warprnnt.cmake
 +++ b/cmake/external/warprnnt.cmake
-@@ -96,10 +96,10 @@ if(WIN32)
+@@ -115,10 +115,10 @@ if(WIN32)
    set(WARPRNNT_CXX_FLAGS_DEBUG
        $<FILTER:${CMAKE_CXX_FLAGS_DEBUG},EXCLUDE,/Zc:inline>)
  else()
@@ -1198,24 +1208,16 @@ index ce4b43343a..4407023101 100644
    set(WARPRNNT_CXX_FLAGS_RELEASE ${CMAKE_CXX_FLAGS_RELEASE})
    set(WARPRNNT_CXX_FLAGS_DEBUG ${CMAKE_CXX_FLAGS_DEBUG})
  endif()
-@@ -122,7 +122,7 @@ ExternalProject_Add(
-   PATCH_COMMAND
-   COMMAND ${WARPCTC_PATCH_CUDA_COMMAND}
-   COMMAND ${WARPRNNT_PATCH_ROCM_COMMAND}
--  #BUILD_ALWAYS    1
-+  # BUILD_ALWAYS    1
-   CMAKE_ARGS -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-              -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-              -DCMAKE_C_FLAGS=${WARPRNNT_C_FLAGS}
-@@ -132,7 +132,7 @@ ExternalProject_Add(
+@@ -151,7 +151,7 @@ ExternalProject_Add(
               -DCMAKE_CXX_FLAGS_RELEASE=${WARPRNNT_CXX_FLAGS_RELEASE}
               -DCMAKE_CXX_FLAGS_DEBUG=${WARPRNNT_CXX_FLAGS_DEBUG}
               -DCMAKE_INSTALL_PREFIX=${WARPRNNT_INSTALL_DIR}
 -             -DWITH_GPU=${WITH_GPU}
 +             -DWITH_GPU=ON
               -DWITH_ROCM=${WITH_ROCM}
+              ${WARPRNNT_ROCM_CMAKE_ARGS}
               -DWITH_OMP=${USE_OMP}
-              -DNVCC_FLAGS_EXTRA=${NVCC_FLAGS_EXTRA}
+
 diff --git a/python/setup.py.in b/python/setup.py.in
 index 2ea8c02ac9..3952e6de17 100644
 --- a/python/setup.py.in
@@ -1377,20 +1379,7 @@ index 7ced1fdc17..e49759ebb4 100644
  }
  
  template <typename T>
- 
-diff --git a/paddle/fluid/imperative/data_loader.cc b/paddle/fluid/imperative/data_loader.cc
-index 0ba86ba208..1ab4a620eb 100644
---- a/paddle/fluid/imperative/data_loader.cc
-+++ b/paddle/fluid/imperative/data_loader.cc
-@@ -171,7 +171,7 @@ void ThrowErrorIfLoadProcessFailed() {
-               "space of `/dev/shm`. Shared storage space needs to be greater "
-               "than (DataLoader Num * DataLoader queue capacity * 1 batch data "
-               "size).\n  You can solve this problem by increasing the shared "
--              "storage space or reducing the queue capacity appropriately.\n",
-+              "storage space or reducing the queue capacity appropriately.\n"
-               "  1. If run DataLoader by DataLoader.from_generator(...), queue "
-               "capacity is set by from_generator(..., capacity=xx, ...).\n"
-               "  2. If run DataLoader by DataLoader(dataset, ...), queue "
+
 diff --git a/paddle/common/flags.cc b/paddle/common/flags.cc
 index 1110a88cdc..9b86cdd2f2 100644
 --- a/paddle/common/flags.cc

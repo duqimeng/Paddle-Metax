@@ -41,6 +41,9 @@ echo ">>> Cleaning up temporary patch files..."
 
 rm -r patches/eigen3
 
+echo ">>> Copying warpctc.patch ..."
+cp patches/warpctc.patch Paddle/third_party/warpctc/
+
 cd Paddle/
 
 echo ">>> Applying main patch: paddle.patch..."
