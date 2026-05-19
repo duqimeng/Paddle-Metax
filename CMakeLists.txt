@@ -158,8 +158,8 @@ set_target_properties(external_error_proto PROPERTIES POSITION_INDEPENDENT_CODE
                                                       ON)
 set(METAX_EXTERNAL_DEPS_TARGET metax_external_deps)
 
-add_custom_target(${METAX_EXTERNAL_DEPS_TARGET} DEPENDS eigen3 zlib warpctc
-                                                        warprnnt protobuf)
+add_custom_target(${METAX_EXTERNAL_DEPS_TARGET}
+                  DEPENDS eigen3 zlib extern_warpctc warprnnt protobuf)
 
 file(
   GLOB
